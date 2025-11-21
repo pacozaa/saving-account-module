@@ -159,6 +159,22 @@ All services are accessible through the gateway with these path prefixes:
 2. Wait 30-60 seconds for services to register with Eureka
 3. Check logs for any startup errors
 
+### CORS Errors (Failed to fetch)
+
+If you see "Failed to fetch" or CORS errors when trying API endpoints:
+
+1. **Ensure API Gateway is running with CORS enabled**: The gateway should have CORS configuration
+2. **Clear browser cache**: Sometimes old CORS policies are cached
+3. **Check browser console**: Look for specific CORS error messages (F12 → Console tab)
+4. **Verify service is registered**: Check http://localhost:8761 to ensure services are registered
+5. **Try a hard refresh**: Press Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows/Linux)
+
+The API Gateway now includes CORS configuration that allows:
+- All origins (in development)
+- Common HTTP methods (GET, POST, PUT, DELETE, PATCH, OPTIONS)
+- Authorization headers for JWT
+- Credentials (cookies, auth headers)
+
 ### 401 Unauthorized Errors
 
 1. Make sure you've clicked the "Authorize" button

@@ -1,113 +1,97 @@
 package com.banking.account.controller;
 
 import com.banking.account.dto.AccountDto;
+import com.banking.account.dto.CreateAccountRequest;
+import com.banking.account.dto.UpdateBalanceRequest;
+import com.banking.account.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/accounts")
-@Tag(name = "Account Management", description = "Endpoints for managing customer accounts and balances")
-@SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Account Management", description = "APIs for managing bank accounts")
 public class AccountController {
-
-    @Operation(
-            summary = "Get Account by ID",
-            description = "Retrieves account details by account ID"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Account found",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = AccountDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Account not found"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token"
-            )
+    
+    private final AccountService accountService;
+    
+    @PostMapping("/create")
+    @Operation(summary = "Create a new account", description = "Creates a new bank account for a user")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Account created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    @GetMapping("/{accountId}")
+    public ResponseEntity<AccountDto> createAccount(
+            @Valid @RequestBody CreateAccountRequest request) {
+        log.info("POST /api/accounts/create - userId: {}, accountType: {}", 
+                request.getUserId(), request.getAccountType());
+        
+        AccountDto account = accountService.createAccount(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(account);
+    }
+    
+    @GetMapping("/{id}")
+    @Operation(summary = "Get account by ID", description = "Retrieves account details by account ID")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Account found"),
+        @ApiResponse(responseCode = "404", description = "Account not found")
+    })
     public ResponseEntity<AccountDto> getAccount(
-            @Parameter(description = "Account ID", example = "101")
-            @PathVariable Long accountId
-    ) {
-        // TODO: Implement actual logic
-        AccountDto account = new AccountDto(
-                accountId,
-                1L,
-                "1234567890",
-                new BigDecimal("1500.00"),
-                "ACTIVE",
-                "SAVINGS"
-        );
+            @Parameter(description = "Account ID (7-digit account number)", example = "1234567")
+            @PathVariable String id) {
+        log.info("GET /api/accounts/{}", id);
+        
+        AccountDto account = accountService.getAccount(id);
         return ResponseEntity.ok(account);
     }
-
-    @Operation(
-            summary = "Get Accounts by User ID",
-            description = "Retrieves all accounts belonging to a specific user"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "List of user accounts",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = AccountDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized"
-            )
+    
+    @PutMapping("/{id}/balance")
+    @Operation(summary = "Update account balance", 
+               description = "Updates account balance by adding the specified amount (use negative value to deduct)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Balance updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid amount or insufficient funds"),
+        @ApiResponse(responseCode = "404", description = "Account not found")
     })
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AccountDto>> getAccountsByUser(
-            @Parameter(description = "User ID", example = "1")
-            @PathVariable Long userId
-    ) {
-        // TODO: Implement actual logic
-        AccountDto account = new AccountDto(
-                101L,
-                userId,
-                "1234567890",
-                new BigDecimal("1500.00"),
-                "ACTIVE",
-                "SAVINGS"
-        );
-        return ResponseEntity.ok(List.of(account));
+    public ResponseEntity<AccountDto> updateBalance(
+            @Parameter(description = "Account ID (7-digit account number)", example = "1234567")
+            @PathVariable String id,
+            @Valid @RequestBody UpdateBalanceRequest request) {
+        log.info("PUT /api/accounts/{}/balance - amount: {}", id, request.getAmount());
+        
+        AccountDto account = accountService.updateBalance(id, request.getAmount());
+        return ResponseEntity.ok(account);
     }
-
-    @Operation(
-            summary = "Update Account Balance",
-            description = "Updates account balance (used internally by other services)"
-    )
-    @ApiResponse(responseCode = "200", description = "Balance updated successfully")
-    @PutMapping("/{accountId}/balance")
-    public ResponseEntity<Void> updateBalance(
-            @Parameter(description = "Account ID", example = "101")
-            @PathVariable Long accountId,
-            @Parameter(description = "New balance amount", example = "2000.00")
-            @RequestParam BigDecimal amount
-    ) {
-        // TODO: Implement actual logic
-        return ResponseEntity.ok().build();
+    
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get accounts by user ID", description = "Retrieves all accounts for a specific user")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Accounts retrieved successfully")
+    })
+    public ResponseEntity<List<AccountDto>> getAccountsByUserId(
+            @Parameter(description = "User ID", example = "1")
+            @PathVariable Long userId) {
+        log.info("GET /api/accounts/user/{}", userId);
+        
+        List<AccountDto> accounts = accountService.getAccountsByUserId(userId);
+        return ResponseEntity.ok(accounts);
+    }
+    
+    @GetMapping("/health")
+    @Operation(summary = "Health check", description = "Simple health check endpoint")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Account Service is running");
     }
 }
