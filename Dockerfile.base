@@ -1,0 +1,41 @@
+# Base Dockerfile for all microservices
+FROM eclipse-temurin:17-jdk-alpine AS build
+WORKDIR /workspace/app
+
+# Copy parent pom
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+
+# Copy all module poms for dependency resolution
+COPY eureka-server/pom.xml eureka-server/
+COPY api-gateway/pom.xml api-gateway/
+COPY auth-service/pom.xml auth-service/
+COPY register-service/pom.xml register-service/
+COPY account-service/pom.xml account-service/
+COPY transaction-service/pom.xml transaction-service/
+COPY deposit-service/pom.xml deposit-service/
+COPY transfer-service/pom.xml transfer-service/
+
+# Download dependencies
+RUN ./mvnw dependency:go-offline -B
+
+# Copy source code
+COPY eureka-server/src eureka-server/src
+COPY api-gateway/src api-gateway/src
+COPY auth-service/src auth-service/src
+COPY register-service/src register-service/src
+COPY account-service/src account-service/src
+COPY transaction-service/src transaction-service/src
+COPY deposit-service/src deposit-service/src
+COPY transfer-service/src transfer-service/src
+
+# Build all modules
+RUN ./mvnw clean package -DskipTests -B
+
+# Runtime stage
+FROM eclipse-temurin:17-jre-alpine
+VOLUME /tmp
+ARG SERVICE_NAME
+COPY --from=build /workspace/app/${SERVICE_NAME}/target/*.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
