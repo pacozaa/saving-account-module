@@ -1,6 +1,8 @@
 package com.banking.transaction.controller;
 
+import com.banking.transaction.dto.LogTransactionRequest;
 import com.banking.transaction.dto.TransactionDto;
+import com.banking.transaction.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,18 +11,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
 @Tag(name = "Transaction Management", description = "Endpoints for transaction history and logging")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class TransactionController {
+
+    private final TransactionService transactionService;
 
     @Operation(
             summary = "Get Transactions by Account",
@@ -45,18 +50,8 @@ public class TransactionController {
             @Parameter(description = "Account ID", example = "101")
             @PathVariable Long accountId
     ) {
-        // TODO: Implement actual logic
-        TransactionDto transaction = new TransactionDto(
-                1001L,
-                accountId,
-                "DEPOSIT",
-                new BigDecimal("500.00"),
-                null,
-                "Deposit from teller",
-                LocalDateTime.now(),
-                "COMPLETED"
-        );
-        return ResponseEntity.ok(List.of(transaction));
+        List<TransactionDto> transactions = transactionService.getTransactionsByAccountId(accountId);
+        return ResponseEntity.ok(transactions);
     }
 
     @Operation(
@@ -64,22 +59,13 @@ public class TransactionController {
             description = "Retrieves a specific transaction by its ID"
     )
     @ApiResponse(responseCode = "200", description = "Transaction found")
+    @ApiResponse(responseCode = "404", description = "Transaction not found")
     @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionDto> getTransaction(
             @Parameter(description = "Transaction ID", example = "1001")
             @PathVariable Long transactionId
     ) {
-        // TODO: Implement actual logic
-        TransactionDto transaction = new TransactionDto(
-                transactionId,
-                101L,
-                "DEPOSIT",
-                new BigDecimal("500.00"),
-                null,
-                "Deposit from teller",
-                LocalDateTime.now(),
-                "COMPLETED"
-        );
+        TransactionDto transaction = transactionService.getTransactionById(transactionId);
         return ResponseEntity.ok(transaction);
     }
 
@@ -88,14 +74,12 @@ public class TransactionController {
             description = "Records a new transaction (used internally by orchestrator services)"
     )
     @ApiResponse(responseCode = "201", description = "Transaction logged successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request")
     @PostMapping
     public ResponseEntity<TransactionDto> logTransaction(
-            @RequestBody TransactionDto transaction
+            @Valid @RequestBody LogTransactionRequest request
     ) {
-        // TODO: Implement actual logic
-        transaction.setId(1001L);
-        transaction.setTimestamp(LocalDateTime.now());
-        transaction.setStatus("COMPLETED");
+        TransactionDto transaction = transactionService.logTransaction(request);
         return ResponseEntity.status(201).body(transaction);
     }
 }
