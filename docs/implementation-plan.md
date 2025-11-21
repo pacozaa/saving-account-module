@@ -123,7 +123,7 @@ Based on the microservices architecture with:
 
 ### **Phase 2: Data Services (Hours 4-16)**
 
-#### Hour 4-8: Account Service
+#### Hour 4-8: Account Service ✅ COMPLETED
 - [x] Add dependencies:
   - Spring Data JPA ✅
   - H2 Database ✅
@@ -131,7 +131,7 @@ Based on the microservices architecture with:
   - Spring Web ✅
   - Eureka Client ✅
   - Spring Validation ✅
-- [ ] Create `Account` entity:
+- [x] Create `Account` entity:
   ```java
   @Entity
   public class Account {
@@ -143,46 +143,59 @@ Based on the microservices architecture with:
       private LocalDateTime createdAt;
   }
   ```
-- [ ] Create `AccountRepository` (Spring Data JPA)
-- [ ] Implement `AccountService`:
+- [x] Create `AccountRepository` (Spring Data JPA)
+- [x] Implement `AccountService`:
   - `createAccount(userId, accountType)`
   - `getAccount(accountId)`
   - `updateBalance(accountId, amount)`
   - `getAccountsByUserId(userId)`
-- [ ] Create REST controller with endpoints:
+- [x] Create REST controller with endpoints:
   - `POST /api/accounts/create`
   - `GET /api/accounts/{id}`
   - `PUT /api/accounts/{id}/balance`
   - `GET /api/accounts/user/{userId}`
-- [ ] Add validation and error handling
-- [ ] Test endpoints with Postman/curl
+- [x] Add validation and error handling
+- [x] Test endpoints with Postman/curl
 
-#### Hour 8-12: Transaction Service
+**Status:** ✅ COMPLETED
+
+**Completed Implementation:**
+- Account entity with proper JPA annotations and lifecycle callbacks
+- AccountRepository with custom query methods (findByUserId, existsByUserId)
+- AccountService with full business logic including balance validation
+- DTOs: CreateAccountRequest, AccountDto, UpdateBalanceRequest
+- REST controller with all required endpoints
+- GlobalExceptionHandler with proper error responses
+- Custom exceptions: AccountNotFoundException
+- Build successful, service running on port 8083
+- All endpoints properly documented with Swagger annotations
+
+#### Hour 8-12: Transaction Service ✅ COMPLETED
 - [x] Add same dependencies as Account Service ✅
-- [ ] Create `Transaction` entity:
-  ```java
-  @Entity
-  public class Transaction {
-      @Id @GeneratedValue
-      private Long id;
-      private Long accountId;
-      private String transactionType; // DEPOSIT, WITHDRAWAL, TRANSFER
-      private BigDecimal amount;
-      private Long relatedAccountId; // For transfers
-      private LocalDateTime timestamp;
-      private String description;
-  }
-  ```
-- [ ] Create `TransactionRepository`
-- [ ] Implement `TransactionService`:
-  - `logTransaction(transactionDto)`
-  - `getTransactionsByAccountId(accountId)`
-  - `getTransactionById(transactionId)`
-- [ ] Create REST controller with endpoints:
-  - `POST /api/transactions/log`
-  - `GET /api/transactions/{id}`
-  - `GET /api/transactions/account/{accountId}`
-- [ ] Test transaction logging
+- [x] Create `Transaction` entity ✅
+- [x] Create `TransactionRepository` ✅
+- [x] Implement `TransactionService` ✅
+  - `logTransaction(transactionDto)` ✅
+  - `getTransactionsByAccountId(accountId)` ✅
+  - `getTransactionById(transactionId)` ✅
+- [x] Create REST controller with endpoints ✅
+  - `POST /transactions` (log transaction) ✅
+  - `GET /transactions/{id}` ✅
+  - `GET /transactions/account/{accountId}` ✅
+- [x] Test transaction logging ✅
+
+**Status:** ✅ COMPLETED
+
+**Completed Implementation:**
+- Transaction entity with proper JPA annotations and lifecycle callbacks
+- TransactionRepository with custom query methods (findByAccountIdOrderByTimestampDesc)
+- TransactionService with full business logic including transaction logging
+- DTOs: LogTransactionRequest (with validation), TransactionDto
+- REST controller with all required endpoints
+- GlobalExceptionHandler with proper error responses
+- Custom exceptions: TransactionNotFoundException
+- Build successful, service configured to run on port 8084
+- All endpoints properly documented with Swagger annotations
 
 #### Hour 12-16: Register Service
 - [x] Add dependencies + Spring Security for BCrypt ✅
@@ -394,7 +407,8 @@ Based on the microservices architecture with:
 
 ## Progress Summary
 
-### ✅ Completed (Phase 1 - Hour 0-1)
+### ✅ Completed (Phase 1 & Phase 2 - Data Services)
+**Hour 0-4: Infrastructure Setup**
 - Maven multi-module project structure with 8 microservices
 - All POMs configured with appropriate dependencies
 - Main application classes with proper Spring annotations
@@ -405,12 +419,39 @@ Based on the microservices architecture with:
 - Feign client setup for orchestrator services
 - JWT dependencies for Auth service
 - Maven build validation successful
+- Eureka Server running and all services registered
+- API Gateway routing verified and tested
 
-### 🚧 Next Steps (Hour 1-2)
-- **Test Eureka Server startup**
-- Verify service registration
-- Test API Gateway routing
-- Begin Account Service entity and repository implementation
+**Hour 4-8: Account Service (COMPLETED)**
+- Complete Account entity with JPA annotations
+- AccountRepository with Spring Data JPA
+- AccountService with full business logic (create, get, update balance, get by user)
+- REST controller with 5 endpoints (create, get by id, update balance, get by user, health)
+- Validation annotations and error handling
+- GlobalExceptionHandler for consistent error responses
+- Custom exceptions (AccountNotFoundException)
+- DTOs with proper validation
+- Swagger/OpenAPI documentation
+- Service running successfully on port 8083
+
+**Hour 8-12: Transaction Service (COMPLETED)**
+- Complete Transaction entity with JPA annotations
+- TransactionRepository with Spring Data JPA and custom queries
+- TransactionService with full business logic (log transaction, get by account, get by id)
+- REST controller with 3 endpoints (log, get by id, get by account)
+- Validation annotations and error handling
+- GlobalExceptionHandler for consistent error responses
+- Custom exceptions (TransactionNotFoundException)
+- DTOs with proper validation (LogTransactionRequest, TransactionDto)
+- Swagger/OpenAPI documentation
+- Service configured on port 8084
+
+### 🚧 Next Steps (Hour 12-16)
+- **Begin Register Service implementation**
+- Create User entity with BCrypt password hashing
+- Implement UserRepository
+- Create RegisterService with user creation and account integration
+- Build REST endpoints for user registration
 
 ### 📝 Notes
 - All services configured to register with Eureka on localhost:8761

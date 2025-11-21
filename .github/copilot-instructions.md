@@ -19,3 +19,4 @@ spring init --dependencies=web,cloud-eureka,cloud-config-client \
 - Use Spring Cloud Netflix Eureka for service discovery.
 - Use Spring Cloud Gateway as the API gateway.
 - Use Spring Cloud OpenFeign for inter-service communication.
+- No need for prefix `api/` in the REST endpoints/services's controller because api-gateway handles routing.
