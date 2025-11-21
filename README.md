@@ -163,6 +163,48 @@ cd transfer-service
 mvn spring-boot:run
 ```
 
+## 📚 API Documentation (Swagger/OpenAPI)
+
+The project includes comprehensive Swagger/OpenAPI documentation for all services.
+
+### Access Swagger UI
+
+**Through API Gateway (Recommended):**
+- **Aggregated Documentation**: http://localhost:8080/swagger-ui.html
+  - View all services' APIs in one place
+  - Switch between services using the dropdown menu
+
+**Individual Services:**
+Each service has its own Swagger UI accessible directly:
+
+| Service | Swagger UI URL | API Docs JSON |
+|---------|---------------|---------------|
+| **Auth Service** | http://localhost:8081/swagger-ui.html | http://localhost:8081/v3/api-docs |
+| **Register Service** | http://localhost:8082/swagger-ui.html | http://localhost:8082/v3/api-docs |
+| **Account Service** | http://localhost:8083/swagger-ui.html | http://localhost:8083/v3/api-docs |
+| **Transaction Service** | http://localhost:8084/swagger-ui.html | http://localhost:8084/v3/api-docs |
+| **Deposit Service** | http://localhost:8085/swagger-ui.html | http://localhost:8085/v3/api-docs |
+| **Transfer Service** | http://localhost:8086/swagger-ui.html | http://localhost:8086/v3/api-docs |
+
+### Using Swagger UI
+
+1. **Explore APIs**: Browse all available endpoints with detailed descriptions
+2. **Try It Out**: Execute API calls directly from the browser
+3. **Authentication**: For protected endpoints:
+   - First, call `POST /api/auth/login` to get a JWT token
+   - Click the "Authorize" button (🔓) at the top of Swagger UI
+   - Enter: `Bearer <your-jwt-token>`
+   - Click "Authorize" and "Close"
+   - Now you can test protected endpoints
+
+### API Documentation Features
+
+- **Request/Response Schemas**: Detailed data models with examples
+- **Parameter Descriptions**: Clear explanations of all parameters
+- **Response Codes**: HTTP status codes with descriptions
+- **Security Schemes**: JWT Bearer token authentication documented
+- **Try It Out**: Interactive API testing directly from the browser
+
 ## 📋 API Endpoints
 
 All requests go through the API Gateway at `http://localhost:8080`
@@ -251,6 +293,7 @@ Authorization: Bearer <jwt-token>
 - **Monitoring**: Spring Boot Actuator
 - **Database**: H2 (in-memory)
 - **Security**: JWT (JSON Web Tokens)
+- **API Documentation**: Springdoc OpenAPI 3 (Swagger UI)
 - **Build Tool**: Maven (Multi-Module)
 - **Java Version**: 17
 - **Containerization**: Docker & Docker Compose
@@ -403,6 +446,5 @@ docker compose down -v
 ## 🎯 Future Enhancements
 
 - [x] Docker Compose for easy deployment
-- [ ] Implement Saga pattern for distributed transactions
-- [ ] Swagger/OpenAPI documentation
-- [ ] Comprehensive unit and integration tests
+- [x] Swagger/OpenAPI documentation
+- [ ] Unit tests

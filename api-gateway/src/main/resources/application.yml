@@ -57,3 +57,22 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /api/auth/v3/api-docs
+      - name: Register Service
+        url: /api/register/v3/api-docs
+      - name: Account Service
+        url: /api/accounts/v3/api-docs
+      - name: Transaction Service
+        url: /api/transactions/v3/api-docs
+      - name: Deposit Service
+        url: /api/deposit/v3/api-docs
+      - name: Transfer Service
+        url: /api/transfer/v3/api-docs
+  api-docs:
+    enabled: true
