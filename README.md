@@ -436,8 +436,16 @@ docker compose down
 docker compose down -v
 ```
 
-## 🎯 Future Enhancements
+## Running Tests
 
-- [x] Docker Compose for easy deployment
-- [x] Swagger/OpenAPI documentation
-- [ ] Unit tests
+### Run All Tests
+```bash
+mvn test
+```
+
+### Run All Tests in Parallel
+```bash
+mvn -T 1C test
+# -T 1C = 1 thread per CPU core
+# or specify exact thread count: mvn -T 4 test
+```

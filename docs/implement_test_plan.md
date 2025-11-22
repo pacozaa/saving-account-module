@@ -139,24 +139,38 @@ deposit-service/
 
 ---
 
-### 6. Transfer Service
+### 6. Transfer Service ✅ COMPLETED
 
-#### Tests to Write:
+#### Tests Implemented:
 ```
 transfer-service/
 └── src/test/java/com/banking/transfer/
     ├── service/
-    │   └── TransferServiceTest.java         ← Priority 1
+    │   └── TransferServiceTest.java         ✅ Completed
     └── controller/
-        └── TransferControllerTest.java      ← Priority 2
+        └── TransferControllerTest.java      ✅ Completed
 ```
 
 **TransferServiceTest.java** (Unit Test with Mocked Feign Clients)
-- ✅ `testTransfer_Success_UpdatesBothAccountsAndLogsTransactions()`
-- ✅ `testTransfer_InsufficientFunds_ThrowsException()`
-- ✅ `testTransfer_SameAccount_ThrowsException()`
-- ✅ `testTransfer_SenderAccountNotFound_ThrowsException()`
-- ✅ `testTransfer_ReceiverAccountNotFound_ThrowsException()`
+- ✅ `testTransfer_Success_UpdatesBothAccountsAndLogsTransactions()` - Implemented
+- ✅ `testTransfer_InsufficientFunds_ThrowsException()` - Implemented
+- ✅ `testTransfer_SameAccount_ThrowsException()` - Implemented
+- ✅ `testTransfer_SenderAccountNotFound_ThrowsException()` - Implemented
+- ✅ `testTransfer_ReceiverAccountNotFound_ThrowsException()` - Implemented
+
+**TransferControllerTest.java** (@WebMvcTest)
+- ✅ `testTransfer_ValidRequest_Returns200()` - Implemented
+- ✅ `testTransfer_InvalidRequest_MissingFromAccountId_Returns400()` - Implemented
+- ✅ `testTransfer_InvalidRequest_MissingToAccountId_Returns400()` - Implemented
+- ✅ `testTransfer_InvalidRequest_MissingAmount_Returns400()` - Implemented
+- ✅ `testTransfer_InvalidRequest_NegativeAmount_Returns400()` - Implemented
+- ✅ `testTransfer_InvalidRequest_ZeroAmount_Returns400()` - Implemented
+- ✅ `testTransfer_SameAccountTransfer_Returns400()` - Implemented
+- ✅ `testTransfer_InsufficientFunds_Returns400()` - Implemented
+- ✅ `testTransfer_AccountNotFound_Returns404()` - Implemented
+- ✅ `testHealth_ReturnsHealthyStatus()` - Implemented
+
+**Test Results:** ✅ All 15 tests passing (5 service + 10 controller)
 
 ---
 
@@ -302,6 +316,13 @@ class DepositServiceTest {
 ### Run All Tests
 ```bash
 mvn test
+```
+
+### Run All Tests in Parallel
+```bash
+mvn -T 1C test
+# -T 1C = 1 thread per CPU core
+# or specify exact thread count: mvn -T 4 test
 ```
 
 ### Run Tests for Specific Service
