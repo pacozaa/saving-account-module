@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/transfer")
@@ -56,12 +57,13 @@ public class TransferController {
     })
     @PostMapping
     public ResponseEntity<TransferResponse> transfer(
-            @Valid @RequestBody TransferRequest request
+            @Valid @RequestBody TransferRequest request,
+            @RequestHeader("X-User-Id") Long authenticatedUserId
     ) {
-        log.info("POST /transfer - from: {}, to: {}, amount: {}", 
-                request.getFromAccountId(), request.getToAccountId(), request.getAmount());
+        log.info("POST /transfer - userId: {}, from: {}, to: {}, amount: {}", 
+                authenticatedUserId, request.getFromAccountId(), request.getToAccountId(), request.getAmount());
         
-        TransferResponse response = transferService.transfer(request);
+        TransferResponse response = transferService.transfer(request, authenticatedUserId);
         return ResponseEntity.ok(response);
     }
 

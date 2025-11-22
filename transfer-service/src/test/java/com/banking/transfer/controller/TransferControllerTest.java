@@ -30,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TransferController.class)
 class TransferControllerTest {
 
+    private static final Long AUTHENTICATED_USER_ID = 1L;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -65,11 +67,12 @@ class TransferControllerTest {
     @Test
     void testTransfer_ValidRequest_Returns200() throws Exception {
         // Given
-        when(transferService.transfer(any(TransferRequest.class))).thenReturn(transferResponse);
+        when(transferService.transfer(any(TransferRequest.class), any(Long.class))).thenReturn(transferResponse);
 
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -81,7 +84,7 @@ class TransferControllerTest {
                 .andExpect(jsonPath("$.toAccountNewBalance", is(1500.00)))
                 .andExpect(jsonPath("$.message", is("Transfer successful")));
 
-        verify(transferService).transfer(any(TransferRequest.class));
+        verify(transferService).transfer(any(TransferRequest.class), any(Long.class));
     }
 
     @Test
@@ -97,10 +100,11 @@ class TransferControllerTest {
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService, never()).transfer(any());
+        verify(transferService, never()).transfer(any(), any());
     }
 
     @Test
@@ -116,10 +120,11 @@ class TransferControllerTest {
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService, never()).transfer(any());
+        verify(transferService, never()).transfer(any(), any());
     }
 
     @Test
@@ -135,10 +140,11 @@ class TransferControllerTest {
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService, never()).transfer(any());
+        verify(transferService, never()).transfer(any(), any());
     }
 
     @Test
@@ -154,10 +160,11 @@ class TransferControllerTest {
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService, never()).transfer(any());
+        verify(transferService, never()).transfer(any(), any());
     }
 
     @Test
@@ -173,55 +180,59 @@ class TransferControllerTest {
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService, never()).transfer(any());
+        verify(transferService, never()).transfer(any(), any());
     }
 
     @Test
     void testTransfer_SameAccountTransfer_Returns400() throws Exception {
         // Given
-        when(transferService.transfer(any(TransferRequest.class)))
+        when(transferService.transfer(any(TransferRequest.class), any(Long.class)))
                 .thenThrow(new SameAccountTransferException());
 
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService).transfer(any(TransferRequest.class));
+        verify(transferService).transfer(any(TransferRequest.class), any(Long.class));
     }
 
     @Test
     void testTransfer_InsufficientFunds_Returns400() throws Exception {
         // Given
-        when(transferService.transfer(any(TransferRequest.class)))
+        when(transferService.transfer(any(TransferRequest.class), any(Long.class)))
                 .thenThrow(new InsufficientFundsException("101"));
 
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(transferService).transfer(any(TransferRequest.class));
+        verify(transferService).transfer(any(TransferRequest.class), any(Long.class));
     }
 
     @Test
     void testTransfer_AccountNotFound_Returns404() throws Exception {
         // Given
-        when(transferService.transfer(any(TransferRequest.class)))
+        when(transferService.transfer(any(TransferRequest.class), any(Long.class)))
                 .thenThrow(new AccountNotFoundException("102"));
 
         // When & Then
         mockMvc.perform(post("/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", AUTHENTICATED_USER_ID)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isNotFound());
 
-        verify(transferService).transfer(any(TransferRequest.class));
+        verify(transferService).transfer(any(TransferRequest.class), any(Long.class));
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.banking.transfer.dto.*;
 import com.banking.transfer.exception.AccountNotFoundException;
 import com.banking.transfer.exception.InsufficientFundsException;
 import com.banking.transfer.exception.SameAccountTransferException;
+import com.banking.transfer.exception.UnauthorizedTransferException;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -31,6 +32,8 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 class TransferServiceTest {
+
+    private static final Long AUTHENTICATED_USER_ID = 1L;
 
     @Mock
     private AccountClient accountClient;
@@ -132,7 +135,7 @@ class TransferServiceTest {
                 .thenReturn(receiverTransaction);
 
         // When
-        TransferResponse response = transferService.transfer(transferRequest);
+        TransferResponse response = transferService.transfer(transferRequest, AUTHENTICATED_USER_ID);
 
         // Then
         assertThat(response).isNotNull();
@@ -166,7 +169,7 @@ class TransferServiceTest {
         when(accountClient.getAccount("101")).thenReturn(poorSenderAccount);
 
         // When & Then
-        assertThatThrownBy(() -> transferService.transfer(transferRequest))
+        assertThatThrownBy(() -> transferService.transfer(transferRequest, AUTHENTICATED_USER_ID))
                 .isInstanceOf(InsufficientFundsException.class);
 
         // Verify that we only fetched the sender account and didn't proceed further
@@ -187,7 +190,7 @@ class TransferServiceTest {
         );
 
         // When & Then
-        assertThatThrownBy(() -> transferService.transfer(sameAccountRequest))
+        assertThatThrownBy(() -> transferService.transfer(sameAccountRequest, AUTHENTICATED_USER_ID))
                 .isInstanceOf(SameAccountTransferException.class);
 
         // Verify that no external calls were made
@@ -207,7 +210,7 @@ class TransferServiceTest {
         when(accountClient.getAccount("101")).thenThrow(notFound);
 
         // When & Then
-        assertThatThrownBy(() -> transferService.transfer(transferRequest))
+        assertThatThrownBy(() -> transferService.transfer(transferRequest, AUTHENTICATED_USER_ID))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining("101");
 
@@ -231,13 +234,32 @@ class TransferServiceTest {
         when(accountClient.getAccount("102")).thenThrow(notFound);
 
         // When & Then
-        assertThatThrownBy(() -> transferService.transfer(transferRequest))
+        assertThatThrownBy(() -> transferService.transfer(transferRequest, AUTHENTICATED_USER_ID))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining("102");
 
         // Verify interactions
         verify(accountClient).getAccount("101");
         verify(accountClient).getAccount("102");
+        verify(accountClient, never()).updateBalance(anyString(), any());
+        verify(transactionClient, never()).logTransaction(any());
+    }
+
+    @Test
+    void testTransfer_UnauthorizedUser_ThrowsException() {
+        // Given - user trying to transfer from account they don't own
+        Long unauthorizedUserId = 999L;
+        when(accountClient.getAccount("101")).thenReturn(senderAccount);
+
+        // When & Then
+        assertThatThrownBy(() -> transferService.transfer(transferRequest, unauthorizedUserId))
+                .isInstanceOf(UnauthorizedTransferException.class)
+                .hasMessageContaining("999")
+                .hasMessageContaining("101");
+
+        // Verify that we only fetched the sender account and didn't proceed further
+        verify(accountClient).getAccount("101");
+        verify(accountClient, never()).getAccount("102");
         verify(accountClient, never()).updateBalance(anyString(), any());
         verify(transactionClient, never()).logTransaction(any());
     }

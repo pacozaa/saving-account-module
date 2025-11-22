@@ -6,6 +6,7 @@ import com.banking.transfer.dto.*;
 import com.banking.transfer.exception.AccountNotFoundException;
 import com.banking.transfer.exception.InsufficientFundsException;
 import com.banking.transfer.exception.SameAccountTransferException;
+import com.banking.transfer.exception.UnauthorizedTransferException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +29,10 @@ public class TransferService {
      * Transfer funds from one account to another
      *
      * @param request Transfer request containing source, destination, and amount
+     * @param authenticatedUserId The ID of the authenticated user making the request
      * @return Transfer response with transaction details
      */
-    public TransferResponse transfer(TransferRequest request) {
+    public TransferResponse transfer(TransferRequest request, Long authenticatedUserId) {
         String fromAccountId = String.valueOf(request.getFromAccountId());
         String toAccountId = String.valueOf(request.getToAccountId());
         BigDecimal amount = request.getAmount();
@@ -44,24 +46,32 @@ public class TransferService {
             throw new SameAccountTransferException();
         }
         
-        // 2. Validate sender account exists and has sufficient funds
+        // 2. Validate sender account exists and user owns it
         AccountDto senderAccount;
         try {
             senderAccount = accountClient.getAccount(fromAccountId);
-            log.info("Sender account found: id={}, balance={}", 
-                    senderAccount.getId(), senderAccount.getBalance());
+            log.info("Sender account found: id={}, userId={}, balance={}", 
+                    senderAccount.getId(), senderAccount.getUserId(), senderAccount.getBalance());
         } catch (FeignException.NotFound e) {
             log.error("Sender account not found: {}", fromAccountId);
             throw new AccountNotFoundException(fromAccountId);
         }
         
+        // 3. Verify the authenticated user owns the source account
+        if (!senderAccount.getUserId().equals(authenticatedUserId)) {
+            log.error("User {} attempted to transfer from account {} owned by user {}",
+                    authenticatedUserId, fromAccountId, senderAccount.getUserId());
+            throw new UnauthorizedTransferException(fromAccountId, authenticatedUserId);
+        }
+        
+        // 4. Validate sufficient funds
         if (senderAccount.getBalance().compareTo(amount) < 0) {
             log.error("Insufficient funds in account {}: balance={}, requested={}", 
                     fromAccountId, senderAccount.getBalance(), amount);
             throw new InsufficientFundsException(fromAccountId);
         }
         
-        // 3. Validate receiver account exists
+        // 5. Validate receiver account exists
         AccountDto receiverAccount;
         try {
             receiverAccount = accountClient.getAccount(toAccountId);
@@ -72,19 +82,19 @@ public class TransferService {
             throw new AccountNotFoundException(toAccountId);
         }
         
-        // 4. Deduct from sender
+        // 6. Deduct from sender
         UpdateBalanceRequest deductRequest = new UpdateBalanceRequest(amount.negate());
         AccountDto updatedSenderAccount = accountClient.updateBalance(fromAccountId, deductRequest);
         log.info("Deducted {} from account {}, new balance: {}", 
                 amount, fromAccountId, updatedSenderAccount.getBalance());
         
-        // 5. Add to receiver
+        // 7. Add to receiver
         UpdateBalanceRequest addRequest = new UpdateBalanceRequest(amount);
         AccountDto updatedReceiverAccount = accountClient.updateBalance(toAccountId, addRequest);
         log.info("Added {} to account {}, new balance: {}", 
                 amount, toAccountId, updatedReceiverAccount.getBalance());
         
-        // 6. Log transaction for sender (withdrawal)
+        // 8. Log transaction for sender (withdrawal)
         LogTransactionRequest senderTransaction = new LogTransactionRequest(
                 request.getFromAccountId(),
                 "TRANSFER_OUT",
@@ -97,7 +107,7 @@ public class TransferService {
         TransactionDto senderTxn = transactionClient.logTransaction(senderTransaction);
         log.info("Logged sender transaction: {}", senderTxn.getId());
         
-        // 7. Log transaction for receiver (deposit)
+        // 9. Log transaction for receiver (deposit)
         LogTransactionRequest receiverTransaction = new LogTransactionRequest(
                 request.getToAccountId(),
                 "TRANSFER_IN",
@@ -110,7 +120,7 @@ public class TransferService {
         TransactionDto receiverTxn = transactionClient.logTransaction(receiverTransaction);
         log.info("Logged receiver transaction: {}", receiverTxn.getId());
         
-        // 8. Build response
+        // 10. Build response
         TransferResponse response = new TransferResponse(
                 senderTxn.getId(),
                 request.getFromAccountId(),
