@@ -4,18 +4,6 @@ This document provides comprehensive test scenarios with curl commands to test a
 
 **Base URL:** `http://localhost:8080`
 
----
-
-## 🔴 Table of Contents - Fail Cases Only
-
-**Legend:** ❌ = FAILED | ⏳ = Pending Test
-
-3. [Test Case 5.3: Unauthorized Access to Another User's Account ❌](#test-case-53-unauthorized-access-to-another-users-account-)
-4. [Test Case 6.6: Transfer by Non-Owner of Source Account ❌](#test-case-66-transfer-by-non-owner-of-source-account-)
-5. [Test Case 7.3: Unauthorized Access to Another Account's Transactions ❌](#test-case-73-unauthorized-access-to-another-accounts-transactions-)
-
----
-
 ## Prerequisites
 
 Ensure all services are running:
@@ -354,7 +342,7 @@ curl -X POST http://localhost:8080/api/deposit \
 }
 ```
 
-### Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ❌
+### Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ✅
 
 **Explanation:** Deposit should fail if amount is less than 1 THB.
 
@@ -498,7 +486,7 @@ curl -X GET http://localhost:8080/api/accounts/user/1 \
 ]
 ```
 
-### Test Case 5.3: Unauthorized Access to Another User's Account ❌
+### Test Case 5.3: Unauthorized Access to Another User's Account ✅
 
 **Explanation:** Customer should not be able to access another customer's account (if authorization is properly implemented).
 
@@ -673,7 +661,7 @@ curl -X POST http://localhost:8080/api/transfer \
 }
 ```
 
-### Test Case 6.6: Transfer by Non-Owner of Source Account ❌
+### Test Case 6.6: Transfer by Non-Owner of Source Account ✅
 
 ---
 
@@ -743,7 +731,7 @@ curl -X GET http://localhost:8080/api/transactions/1001 \
 }
 ```
 
-### Test Case 7.3: Unauthorized Access to Another Account's Transactions ❌
+### Test Case 7.3: Unauthorized Access to Another Account's Transactions ✅
 
 **Explanation:** Customer should not be able to view another customer's transactions.
 
