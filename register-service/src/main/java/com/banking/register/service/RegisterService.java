@@ -1,8 +1,5 @@
 package com.banking.register.service;
 
-import com.banking.register.client.AccountClient;
-import com.banking.register.client.dto.AccountDto;
-import com.banking.register.client.dto.CreateAccountRequest;
 import com.banking.register.dto.RegisterRequest;
 import com.banking.register.dto.RegisterResponse;
 import com.banking.register.dto.UserDto;
@@ -11,12 +8,9 @@ import com.banking.register.exception.UserAlreadyExistsException;
 import com.banking.register.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +18,6 @@ import java.math.BigDecimal;
 public class RegisterService {
     
     private final UserRepository userRepository;
-    private final AccountClient accountClient;
     private final BCryptPasswordEncoder passwordEncoder;
     
     @Transactional
@@ -57,19 +50,6 @@ public class RegisterService {
         User savedUser = userRepository.save(user);
         log.info("User created with ID: {}", savedUser.getId());
         
-        // Create default account via Account Service
-        CreateAccountRequest accountRequest = CreateAccountRequest.builder()
-                .userId(savedUser.getId())
-                .accountType("SAVINGS")
-                .initialBalance(BigDecimal.ZERO)
-                .build();
-        
-        ResponseEntity<AccountDto> accountResponse = accountClient.createAccount(accountRequest);
-        AccountDto account = accountResponse.getBody();
-        
-        log.info("Default account created with ID: {} for user: {}", 
-                account != null ? account.getId() : "null", savedUser.getId());
-        
         // Build response
         UserDto userDto = UserDto.builder()
                 .id(savedUser.getId())
@@ -82,8 +62,8 @@ public class RegisterService {
         
         return RegisterResponse.builder()
                 .user(userDto)
-                .defaultAccountId(account != null ? Long.parseLong(account.getId()) : null)
-                .message("User registered successfully with default account")
+                .defaultAccountId(null)
+                .message("User registered successfully")
                 .build();
     }
     
