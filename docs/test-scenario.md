@@ -6,9 +6,22 @@ This document provides comprehensive test scenarios with curl commands to test a
 
 ---
 
+## 🔴 Table of Contents - Fail Cases Only
+
+**Legend:** ❌ = FAILED | ⏳ = Pending Test
+
+1. [Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ❌](#test-case-43-deposit-with-invalid-amount-less-than-1-thb-)
+2. [Test Case 4.5: Non-TELLER User Tries to Deposit ❌](#test-case-45-non-teller-user-tries-to-deposit-)
+3. [Test Case 5.3: Unauthorized Access to Another User's Account ❌](#test-case-53-unauthorized-access-to-another-users-account-)
+4. [Test Case 6.6: Transfer by Non-Owner of Source Account ❌](#test-case-66-transfer-by-non-owner-of-source-account-)
+5. [Test Case 7.3: Unauthorized Access to Another Account's Transactions ❌](#test-case-73-unauthorized-access-to-another-accounts-transactions-)
+
+---
+
 ## Prerequisites
 
 Ensure all services are running:
+
 - Eureka Server (port 8761)
 - API Gateway (port 8080)
 - Auth Service
@@ -23,6 +36,7 @@ Ensure all services are running:
 ## Test Scenario 1: Online Registration (Requirement 1)
 
 ### Description
+
 A new PERSON registers online by providing email, password, and personal information.
 
 ### Test Case 1.1: Successful Registration as PERSON ✅
@@ -41,6 +55,7 @@ curl -X POST http://localhost:8080/api/register \
 ```
 
 **Expected Response:** HTTP 201 Created
+
 ```json
 {
   "user": {
@@ -71,6 +86,7 @@ curl -X POST http://localhost:8080/api/register \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "code": "400",
@@ -95,6 +111,7 @@ curl -X POST http://localhost:8080/api/register \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "code": "400",
@@ -119,6 +136,7 @@ curl -X POST http://localhost:8080/api/register \
 ```
 
 **Expected Response:** HTTP 201 Created
+
 ```json
 {
   "user": {
@@ -138,6 +156,7 @@ curl -X POST http://localhost:8080/api/register \
 ## Test Scenario 2: User Authentication
 
 ### Description
+
 Users must authenticate to receive a JWT token for subsequent operations.
 
 ### Test Case 2.1: Successful Login ✅
@@ -154,6 +173,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTcwMDYzODAwMCwiZXhwIjoxNzAwNzI0NDAwfQ.abc123...",
@@ -165,6 +185,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 **Note:** Save the token for subsequent requests. Export it as environment variable:
+
 ```bash
 export TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTcwMDYzODAwMCwiZXhwIjoxNzAwNzI0NDAwfQ.abc123..."
 ```
@@ -183,6 +204,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 **Expected Response:** HTTP 401 Unauthorized
+
 ```json
 {
   "code": "401",
@@ -201,6 +223,7 @@ curl -X GET http://localhost:8080/api/auth/validate \
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
   "valid": true,
@@ -215,6 +238,7 @@ curl -X GET http://localhost:8080/api/auth/validate \
 ## Test Scenario 3: Creating a New Account (Requirement 2)
 
 ### Description
+
 Any user can create new accounts. The system automatically creates a default SAVINGS account during user registration.
 
 ### Test Case 3.1: User Gets Their Default Account ✅
@@ -222,6 +246,7 @@ Any user can create new accounts. The system automatically creates a default SAV
 **Explanation:** After registration, a user already has a default SAVINGS account created automatically.
 
 **Step 1:** Register a new user
+
 ```bash
 curl -X POST http://localhost:8080/api/register \
   -H "Content-Type: application/json" \
@@ -232,9 +257,11 @@ curl -X POST http://localhost:8080/api/register \
     "role": "PERSON"
   }'
 ```
+
 Save the response - it includes `defaultAccountId`.
 
 **Step 2:** User logs in (save token as $TOKEN)
+
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
@@ -245,21 +272,22 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 **Step 3:** Get user's default account
+
 ```bash
 curl -X GET http://localhost:8080/api/accounts/user/3 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 [
   {
-    "id": "1234567",
+    "id": "8152356",
     "userId": 3,
+    "balance": 1000.0,
     "accountType": "SAVINGS",
-    "balance": 0.00,
-    "status": "ACTIVE",
-    "createdAt": "2025-11-22T10:30:00"
+    "createdAt": "2025-11-22T13:16:42.142169"
   }
 ]
 ```
@@ -269,9 +297,10 @@ curl -X GET http://localhost:8080/api/accounts/user/3 \
 ## Test Scenario 4: Money Deposit (Requirement 3)
 
 ### Description
+
 Only TELLER can deposit money to an existing account. The amount must be 1 THB or more.
 
-### Test Case 4.1: Successful Deposit by TELLER ⏳
+### Test Case 4.1: Successful Deposit by TELLER ✅
 
 **Explanation:** Teller deposits 1000 THB into an existing account.
 
@@ -280,27 +309,26 @@ curl -X POST http://localhost:8080/api/deposit \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
-    "accountId": "1234567",
+    "accountId": "[accountId]",
     "amount": 1000.00,
-    "tellerId": 2,
+    "tellerId": [tellerId],
     "description": "Cash deposit"
   }'
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
-  "transactionId": 1001,
-  "accountId": "1234567",
-  "amount": 1000.00,
-  "newBalance": 1000.00,
-  "transactionType": "DEPOSIT",
-  "timestamp": "2025-11-22T11:00:00",
+  "transactionId": 1,
+  "accountId": "8152356",
+  "amount": 1000.0,
+  "newBalance": 1000.0,
   "message": "Deposit successful"
 }
 ```
 
-### Test Case 4.2: Deposit with Minimum Amount (1 THB) ⏳
+### Test Case 4.2: Deposit with Minimum Amount (1 THB) ✅
 
 **Explanation:** Verify that minimum deposit of 1 THB is accepted.
 
@@ -309,16 +337,26 @@ curl -X POST http://localhost:8080/api/deposit \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
-    "accountId": "1234567",
+    "accountId": "8152356",
     "amount": 1.00,
-    "tellerId": 2,
+    "tellerId": 3,
     "description": "Minimum deposit test"
   }'
 ```
 
 **Expected Response:** HTTP 200 OK
 
-### Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ⏳
+```json
+{
+  "transactionId": 2,
+  "accountId": "8152356",
+  "amount": 1.0,
+  "newBalance": 1001.0,
+  "message": "Deposit successful"
+}
+```
+
+### Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ❌
 
 **Explanation:** Deposit should fail if amount is less than 1 THB.
 
@@ -335,13 +373,14 @@ curl -X POST http://localhost:8080/api/deposit \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "error": "Amount must be greater than zero"
 }
 ```
 
-### Test Case 4.4: Deposit to Non-Existent Account ⏳
+### Test Case 4.4: Deposit to Non-Existent Account ✅
 
 **Explanation:** Deposit should fail if account doesn't exist.
 
@@ -358,13 +397,16 @@ curl -X POST http://localhost:8080/api/deposit \
 ```
 
 **Expected Response:** HTTP 404 Not Found
+
 ```json
 {
-  "error": "Account not found"
+  "status": 404,
+  "message": "Account or resource not found",
+  "timestamp": "2025-11-22T13:35:56.856604"
 }
 ```
 
-### Test Case 4.5: Non-TELLER User Tries to Deposit ⏳
+### Test Case 4.5: Non-TELLER User Tries to Deposit ❌
 
 **Explanation:** Regular customer should not be able to perform deposits (only tellers can).
 
@@ -386,13 +428,15 @@ curl -X POST http://localhost:8080/api/deposit \
 ## Test Scenario 5: Account Information (Requirement 4)
 
 ### Description
+
 Only CUSTOMERS can login and view their account information.
 
-### Test Case 5.1: View Own Account Information ⏳
+### Test Case 5.1: View Own Account Information ✅
 
 **Explanation:** Customer logs in and views their account details.
 
 **Step 1:** Login as customer
+
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
@@ -402,26 +446,38 @@ curl -X POST http://localhost:8080/api/auth/login \
   }'
 ```
 
+Example response:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTc2Mzc5MzYwMywiZXhwIjoxNzYzODgwMDAzfQ.hqMUjNuokawWcA7L4VPUTgRRHfSLffBzfbG4G9gkguY",
+  "type": "Bearer",
+  "userId": 1,
+  "username": "john_doe",
+  "role": "PERSON"
+}
+```
+
 **Step 2:** Get account by account ID (save token as $CUSTOMER_TOKEN)
+
 ```bash
-curl -X GET http://localhost:8080/api/accounts/1234567 \
+curl -X GET http://localhost:8080/api/accounts/[account id] \
   -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
-  "accountId": "1234567",
+  "id": "2230070",
   "userId": 1,
+  "balance": 0.0,
   "accountType": "SAVINGS",
-  "balance": 1001.00,
-  "status": "ACTIVE",
-  "createdAt": "2025-11-22T10:30:00",
-  "updatedAt": "2025-11-22T11:00:00"
+  "createdAt": "2025-11-22T13:15:29.010087"
 }
 ```
 
-### Test Case 5.2: View All Accounts by User ID ⏳
+### Test Case 5.2: View All Accounts by User ID ✅
 
 **Explanation:** Customer views all accounts associated with their user ID.
 
@@ -431,19 +487,20 @@ curl -X GET http://localhost:8080/api/accounts/user/1 \
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 [
   {
-    "accountId": "1234567",
+    "id": "2230070",
     "userId": 1,
+    "balance": 0.0,
     "accountType": "SAVINGS",
-    "balance": 1001.00,
-    "status": "ACTIVE"
+    "createdAt": "2025-11-22T13:15:29.010087"
   }
 ]
 ```
 
-### Test Case 5.3: Unauthorized Access to Another User's Account ⏳
+### Test Case 5.3: Unauthorized Access to Another User's Account ❌
 
 **Explanation:** Customer should not be able to access another customer's account (if authorization is properly implemented).
 
@@ -459,13 +516,15 @@ curl -X GET http://localhost:8080/api/accounts/7654321 \
 ## Test Scenario 6: Money Transfer (Requirement 5)
 
 ### Description
+
 Only CUSTOMER can transfer money from their own account to any other existing account after login with PIN confirmation.
 
-### Test Case 6.1: Successful Money Transfer ⏳
+### Test Case 6.1: Successful Money Transfer ✅
 
 **Explanation:** Customer transfers 500 THB from their account to another account.
 
-**Prerequisites:** 
+**Prerequisites:**
+
 - Customer account (1234567) has sufficient balance
 - Destination account (7654321) exists
 
@@ -482,20 +541,21 @@ curl -X POST http://localhost:8080/api/transfer \
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
   "transactionId": 1002,
   "fromAccountId": 1234567,
   "toAccountId": 7654321,
-  "amount": 500.00,
-  "sourceNewBalance": 501.00,
-  "destinationNewBalance": 5500.00,
+  "amount": 500.0,
+  "sourceNewBalance": 501.0,
+  "destinationNewBalance": 5500.0,
   "timestamp": "2025-11-22T12:00:00",
   "message": "Transfer successful"
 }
 ```
 
-### Test Case 6.2: Transfer with Insufficient Funds ⏳
+### Test Case 6.2: Transfer with Insufficient Funds ✅
 
 **Explanation:** Transfer should fail if source account has insufficient balance.
 
@@ -512,13 +572,14 @@ curl -X POST http://localhost:8080/api/transfer \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "error": "Insufficient funds"
 }
 ```
 
-### Test Case 6.3: Transfer to Non-Existent Account ⏳
+### Test Case 6.3: Transfer to Non-Existent Account ✅
 
 **Explanation:** Transfer should fail if destination account doesn't exist.
 
@@ -535,13 +596,14 @@ curl -X POST http://localhost:8080/api/transfer \
 ```
 
 **Expected Response:** HTTP 404 Not Found
+
 ```json
 {
   "error": "Destination account not found"
 }
 ```
 
-### Test Case 3.2: Create Additional Account for User ✅
+### Test Case 6.4: Create Additional Account for User ✅
 
 **Explanation:** User can create additional SAVINGS accounts beyond the default one.
 
@@ -557,12 +619,13 @@ curl -X POST http://localhost:8080/api/accounts/create \
 ```
 
 **Expected Response:** HTTP 201 Created
+
 ```json
 {
   "id": "7654321",
   "userId": 3,
   "accountType": "SAVINGS",
-  "balance": 0.00,
+  "balance": 0.0,
   "status": "ACTIVE",
   "createdAt": "2025-11-22T10:40:00"
 }
@@ -581,13 +644,14 @@ curl -X POST http://localhost:8080/api/transfer \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "error": "Cannot transfer to the same account"
 }
 ```
 
-### Test Case 6.5: Transfer with Zero or Negative Amount ⏳
+### Test Case 6.5: Transfer with Zero or Negative Amount ✅
 
 **Explanation:** Transfer should fail with invalid amount.
 
@@ -604,55 +668,60 @@ curl -X POST http://localhost:8080/api/transfer \
 ```
 
 **Expected Response:** HTTP 400 Bad Request
+
 ```json
 {
   "error": "Amount must be greater than zero"
 }
 ```
 
+### Test Case 6.6: Transfer by Non-Owner of Source Account ❌
+
 ---
 
 ## Test Scenario 7: Bank Statement (Requirement 6)
 
 ### Description
+
 Only CUSTOMER can request their bank statement for a specific month after login with PIN confirmation. Transactions must be displayed from past to present.
 
-### Test Case 7.1: Get All Transactions for an Account ⏳
+### Test Case 7.1: Get All Transactions for an Account ✅
 
 **Explanation:** Customer retrieves all transaction history for their account, sorted chronologically.
 
 ```bash
-curl -X GET http://localhost:8080/api/transactions/account/1234567 \
+curl -X GET http://localhost:8080/api/transactions/account/2230070 \
   -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 [
   {
-    "transactionId": 1001,
-    "accountId": "1234567",
-    "transactionType": "DEPOSIT",
-    "amount": 1000.00,
-    "balanceAfter": 1000.00,
-    "description": "Cash deposit",
-    "timestamp": "2025-11-22T11:00:00",
-    "relatedAccountId": null
+    "id": 7,
+    "accountId": 2230070,
+    "type": "TRANSFER_OUT",
+    "amount": 500.0,
+    "relatedAccountId": 8152356,
+    "description": "Payment for services",
+    "timestamp": "2025-11-22T13:51:04.974163",
+    "status": "COMPLETED"
   },
   {
-    "transactionId": 1002,
-    "accountId": "1234567",
-    "transactionType": "TRANSFER_OUT",
-    "amount": -500.00,
-    "balanceAfter": 500.00,
+    "id": 6,
+    "accountId": 2230070,
+    "type": "TRANSFER_IN",
+    "amount": 500.0,
+    "relatedAccountId": 8152356,
     "description": "Payment for services",
-    "timestamp": "2025-11-22T12:00:00",
-    "relatedAccountId": "7654321"
+    "timestamp": "2025-11-22T13:50:06.9551",
+    "status": "COMPLETED"
   }
 ]
 ```
 
-### Test Case 7.2: Get Specific Transaction by ID ⏳
+### Test Case 7.2: Get Specific Transaction by ID ✅
 
 **Explanation:** Customer views details of a specific transaction.
 
@@ -662,20 +731,21 @@ curl -X GET http://localhost:8080/api/transactions/1001 \
 ```
 
 **Expected Response:** HTTP 200 OK
+
 ```json
 {
   "transactionId": 1001,
   "accountId": "1234567",
   "transactionType": "DEPOSIT",
-  "amount": 1000.00,
-  "balanceAfter": 1000.00,
+  "amount": 1000.0,
+  "balanceAfter": 1000.0,
   "description": "Cash deposit",
   "timestamp": "2025-11-22T11:00:00",
   "relatedAccountId": null
 }
 ```
 
-### Test Case 7.3: Unauthorized Access to Another Account's Transactions ⏳
+### Test Case 7.3: Unauthorized Access to Another Account's Transactions ❌
 
 **Explanation:** Customer should not be able to view another customer's transactions.
 
@@ -691,11 +761,13 @@ curl -X GET http://localhost:8080/api/transactions/account/7654321 \
 ## Test Scenario 8: Complete End-to-End Flow
 
 ### Description
+
 A comprehensive test that covers the entire user journey from registration to money transfer.
 
 ### Step 1: Register Two Users (Person A and Person B)
 
 **Person A Registration:**
+
 ```bash
 curl -X POST http://localhost:8080/api/register \
   -H "Content-Type: application/json" \
@@ -708,6 +780,7 @@ curl -X POST http://localhost:8080/api/register \
 ```
 
 **Person B Registration:**
+
 ```bash
 curl -X POST http://localhost:8080/api/register \
   -H "Content-Type: application/json" \
@@ -746,6 +819,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ### Step 4: Teller Creates Accounts for Both Users
 
 **Create account for Alice:**
+
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
   -H "Content-Type: application/json" \
@@ -758,6 +832,7 @@ curl -X POST http://localhost:8080/api/accounts/create \
 ```
 
 **Create account for Bob:**
+
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
   -H "Content-Type: application/json" \
@@ -825,6 +900,7 @@ curl -X GET http://localhost:8080/api/transactions/account/ALICE_ACCOUNT_ID \
 ### Step 10: Bob Logs In and Checks His Balance
 
 **Bob Login:**
+
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
@@ -835,6 +911,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 **Check Balance:**
+
 ```bash
 curl -X GET http://localhost:8080/api/accounts/user/4 \
   -H "Authorization: Bearer $BOB_TOKEN"
@@ -845,6 +922,7 @@ curl -X GET http://localhost:8080/api/accounts/user/4 \
 ## Test Scenario 9: Health Check Endpoints
 
 ### Description
+
 Verify all services are running correctly.
 
 ### Test All Service Health Endpoints
@@ -925,6 +1003,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ## Tips for Testing
 
 1. **Save tokens as environment variables** to reuse them:
+
    ```bash
    export TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
      -H "Content-Type: application/json" \
@@ -932,12 +1011,14 @@ curl -X POST http://localhost:8080/api/auth/login \
    ```
 
 2. **Pretty print JSON responses** using jq:
+
    ```bash
    curl http://localhost:8080/api/accounts/user/1 \
      -H "Authorization: Bearer $TOKEN" | jq .
    ```
 
 3. **Check HTTP status code** only:
+
    ```bash
    curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/auth/health
    ```
