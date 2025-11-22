@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Client as Deposit - Teller - Client
+    participant Gateway as API Gateway
+    participant DepositS as Deposit Service
+    participant TransactionS as Transaction Service
+    participant AccountS as Account Service
+    participant DB_Trans as Transactions DB
+    participant DB_Accts as Accounts DB
+
+    Client->>Gateway: POST /deposits (deposit details)
+    Gateway->>DepositS: Forward deposit request
+    DepositS->>AccountS: Verify account exists
+    AccountS->>DB_Accts: Query account
+    DB_Accts-->>AccountS: Account details
+    AccountS-->>DepositS: Account verified
+    DepositS->>TransactionS: Create transaction record
+    TransactionS->>DB_Trans: Save transaction
+    DB_Trans-->>TransactionS: Transaction saved
+    TransactionS-->>DepositS: Transaction ID
+    DepositS->>AccountS: Update account balance
+    AccountS->>DB_Accts: Update balance
+    DB_Accts-->>AccountS: Balance updated
+    AccountS-->>DepositS: Balance updated
+    DepositS-->>Gateway: Deposit successful
+    Gateway-->>Client: 200 OK (transaction details)

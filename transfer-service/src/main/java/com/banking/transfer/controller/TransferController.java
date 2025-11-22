@@ -30,6 +30,7 @@ public class TransferController {
     @Operation(
             summary = "Transfer Funds",
             description = "Transfers money from one account to another. " +
+                    "Requires a valid 6-digit PIN for authorization. " +
                     "Coordinates with Account Service to deduct from source, credit to destination, " +
                     "and Transaction Service to log the transfer."
     )
@@ -47,12 +48,16 @@ public class TransferController {
                     description = "Invalid request data or insufficient funds"
             ),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "Account not found"
+                    responseCode = "401",
+                    description = "Unauthorized - Invalid PIN"
             ),
             @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized"
+                    responseCode = "403",
+                    description = "Forbidden - User does not own source account"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Account not found"
             )
     })
     @PostMapping

@@ -2,9 +2,11 @@ package com.banking.transfer.service;
 
 import com.banking.transfer.client.AccountClient;
 import com.banking.transfer.client.TransactionClient;
+import com.banking.transfer.client.UserClient;
 import com.banking.transfer.dto.*;
 import com.banking.transfer.exception.AccountNotFoundException;
 import com.banking.transfer.exception.InsufficientFundsException;
+import com.banking.transfer.exception.InvalidPinException;
 import com.banking.transfer.exception.SameAccountTransferException;
 import com.banking.transfer.exception.UnauthorizedTransferException;
 import feign.FeignException;
@@ -24,6 +26,7 @@ public class TransferService {
 
     private final AccountClient accountClient;
     private final TransactionClient transactionClient;
+    private final UserClient userClient;
 
     /**
      * Transfer funds from one account to another
@@ -40,13 +43,30 @@ public class TransferService {
         log.info("Processing transfer: from={}, to={}, amount={}", 
                 fromAccountId, toAccountId, amount);
         
-        // 1. Validate not transferring to the same account
+        // 1. Validate PIN
+        log.info("Validating PIN for user: {}", authenticatedUserId);
+        try {
+            Boolean isPinValid = userClient.validatePin(authenticatedUserId, request.getPin());
+            if (isPinValid == null || !isPinValid) {
+                log.error("Invalid PIN for user: {}", authenticatedUserId);
+                throw new InvalidPinException(authenticatedUserId);
+            }
+            log.info("PIN validated successfully for user: {}", authenticatedUserId);
+        } catch (FeignException.NotFound e) {
+            log.error("User not found during PIN validation: {}", authenticatedUserId);
+            throw new InvalidPinException(authenticatedUserId);
+        } catch (FeignException e) {
+            log.error("Error validating PIN with Register Service: {}", e.getMessage());
+            throw new RuntimeException("Unable to validate PIN at this time");
+        }
+        
+        // 2. Validate not transferring to the same account
         if (request.getFromAccountId().equals(request.getToAccountId())) {
             log.error("Same account transfer attempted: {}", fromAccountId);
             throw new SameAccountTransferException();
         }
         
-        // 2. Validate sender account exists and user owns it
+        // 3. Validate sender account exists and user owns it
         AccountDto senderAccount;
         try {
             senderAccount = accountClient.getAccount(fromAccountId);
@@ -57,21 +77,21 @@ public class TransferService {
             throw new AccountNotFoundException(fromAccountId);
         }
         
-        // 3. Verify the authenticated user owns the source account
+        // 4. Verify the authenticated user owns the source account
         if (!senderAccount.getUserId().equals(authenticatedUserId)) {
             log.error("User {} attempted to transfer from account {} owned by user {}",
                     authenticatedUserId, fromAccountId, senderAccount.getUserId());
             throw new UnauthorizedTransferException(fromAccountId, authenticatedUserId);
         }
         
-        // 4. Validate sufficient funds
+        // 5. Validate sufficient funds
         if (senderAccount.getBalance().compareTo(amount) < 0) {
             log.error("Insufficient funds in account {}: balance={}, requested={}", 
                     fromAccountId, senderAccount.getBalance(), amount);
             throw new InsufficientFundsException(fromAccountId);
         }
         
-        // 5. Validate receiver account exists
+        // 6. Validate receiver account exists
         AccountDto receiverAccount;
         try {
             receiverAccount = accountClient.getAccount(toAccountId);
@@ -82,19 +102,19 @@ public class TransferService {
             throw new AccountNotFoundException(toAccountId);
         }
         
-        // 6. Deduct from sender
+        // 7. Deduct from sender
         UpdateBalanceRequest deductRequest = new UpdateBalanceRequest(amount.negate());
         AccountDto updatedSenderAccount = accountClient.updateBalance(fromAccountId, deductRequest);
         log.info("Deducted {} from account {}, new balance: {}", 
                 amount, fromAccountId, updatedSenderAccount.getBalance());
         
-        // 7. Add to receiver
+        // 8. Add to receiver
         UpdateBalanceRequest addRequest = new UpdateBalanceRequest(amount);
         AccountDto updatedReceiverAccount = accountClient.updateBalance(toAccountId, addRequest);
         log.info("Added {} to account {}, new balance: {}", 
                 amount, toAccountId, updatedReceiverAccount.getBalance());
         
-        // 8. Log transaction for sender (withdrawal)
+        // 9. Log transaction for sender (withdrawal)
         LogTransactionRequest senderTransaction = new LogTransactionRequest(
                 request.getFromAccountId(),
                 "TRANSFER_OUT",
@@ -107,7 +127,7 @@ public class TransferService {
         TransactionDto senderTxn = transactionClient.logTransaction(senderTransaction);
         log.info("Logged sender transaction: {}", senderTxn.getId());
         
-        // 9. Log transaction for receiver (deposit)
+        // 10. Log transaction for receiver (deposit)
         LogTransactionRequest receiverTransaction = new LogTransactionRequest(
                 request.getToAccountId(),
                 "TRANSFER_IN",
@@ -120,7 +140,7 @@ public class TransferService {
         TransactionDto receiverTxn = transactionClient.logTransaction(receiverTransaction);
         log.info("Logged receiver transaction: {}", receiverTxn.getId());
         
-        // 10. Build response
+        // 11. Build response
         TransferResponse response = new TransferResponse(
                 senderTxn.getId(),
                 request.getFromAccountId(),

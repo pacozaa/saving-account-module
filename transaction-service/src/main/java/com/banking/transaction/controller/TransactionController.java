@@ -49,10 +49,12 @@ public class TransactionController {
     public ResponseEntity<List<TransactionDto>> getTransactionsByAccount(
             @Parameter(description = "Account ID", example = "101")
             @PathVariable Long accountId,
+            @Parameter(description = "6-digit PIN for validation", example = "123456", required = true)
+            @RequestParam String pin,
             @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
             @RequestHeader(value = "X-User-Role", required = false) String userRole
     ) {
-        List<TransactionDto> transactions = transactionService.getTransactionsByAccountId(accountId, authenticatedUserId, userRole);
+        List<TransactionDto> transactions = transactionService.getTransactionsByAccountId(accountId, pin, authenticatedUserId, userRole);
         return ResponseEntity.ok(transactions);
     }
 

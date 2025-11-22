@@ -34,6 +34,9 @@ class TransactionServiceTest {
     @Mock
     private com.banking.transaction.client.AccountServiceClient accountServiceClient;
 
+    @Mock
+    private com.banking.transaction.client.RegisterServiceClient registerServiceClient;
+
     @InjectMocks
     private TransactionService transactionService;
 
@@ -126,12 +129,16 @@ class TransactionServiceTest {
         Long accountId = 101L;
         Long userId = 1L;
         String role = "PERSON";
+        String pin = "123456";
         
         // Mock account service to return account owned by user
         com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
         accountDto.setId("101");
         accountDto.setUserId(userId);
         when(accountServiceClient.getAccountById(String.valueOf(accountId))).thenReturn(accountDto);
+        
+        // Mock PIN validation
+        when(registerServiceClient.validatePin(userId, pin)).thenReturn(true);
         
         Transaction tx1 = Transaction.builder()
                 .id(1001L)
@@ -164,7 +171,7 @@ class TransactionServiceTest {
         when(transactionRepository.findByAccountIdOrderByTimestampDesc(accountId)).thenReturn(transactions);
 
         // When
-        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, userId, role);
+        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, pin, userId, role);
 
         // Then
         assertThat(result).isNotNull();
@@ -177,6 +184,7 @@ class TransactionServiceTest {
         assertThat(result.get(2).getType()).isEqualTo("DEPOSIT");
 
         verify(accountServiceClient, times(1)).getAccountById(String.valueOf(accountId));
+        verify(registerServiceClient, times(1)).validatePin(userId, pin);
         verify(transactionRepository, times(1)).findByAccountIdOrderByTimestampDesc(accountId);
     }
 
@@ -187,22 +195,28 @@ class TransactionServiceTest {
         Long accountId = 999L;
         Long userId = 1L;
         String role = "PERSON";
+        String pin = "123456";
         
         // Mock account service to return account owned by user
         com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
         accountDto.setId("999");
         accountDto.setUserId(userId);
         when(accountServiceClient.getAccountById(String.valueOf(accountId))).thenReturn(accountDto);
+        
+        // Mock PIN validation
+        when(registerServiceClient.validatePin(userId, pin)).thenReturn(true);
+        
         when(transactionRepository.findByAccountIdOrderByTimestampDesc(accountId)).thenReturn(Arrays.asList());
 
         // When
-        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, userId, role);
+        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, pin, userId, role);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
 
         verify(accountServiceClient, times(1)).getAccountById(String.valueOf(accountId));
+        verify(registerServiceClient, times(1)).validatePin(userId, pin);
         verify(transactionRepository, times(1)).findByAccountIdOrderByTimestampDesc(accountId);
     }
 

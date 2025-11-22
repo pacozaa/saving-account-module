@@ -143,4 +143,16 @@ public class RegisterService {
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
     }
+    
+    public boolean validatePin(Long userId, String pin) {
+        log.info("Validating PIN for user ID: {}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.banking.register.exception.UserNotFoundException("User not found with ID: " + userId));
+        
+        boolean isValid = passwordEncoder.matches(pin, user.getPin());
+        log.info("PIN validation result for user {}: {}", userId, isValid);
+        
+        return isValid;
+    }
 }

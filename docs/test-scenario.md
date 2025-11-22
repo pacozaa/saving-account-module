@@ -338,7 +338,7 @@ Tellers can create new accounts for users. Accounts are not automatically create
 
 ### Test Case 3.1: Teller Creates Account for User ✅
 
-**Explanation:** A teller creates a new SAVINGS account for a registered user.
+**Explanation:** A teller creates a new SAVINGS account for a registered user. The citizen ID must be provided and validated against the user ID.
 
 **Step 1:** Teller logs in
 
@@ -351,7 +351,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   }'
 ```
 
-**Step 2:** Teller creates account for user
+**Step 2:** Teller creates account for user (must provide citizen ID for verification)
 
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
@@ -359,6 +359,7 @@ curl -X POST http://localhost:8080/api/accounts/create \
   -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
     "userId": 1,
+    "citizenId": "1234567890123",
     "accountType": "SAVINGS",
     "initialBalance": 0
   }'
@@ -405,6 +406,61 @@ curl -X GET http://localhost:8080/api/accounts/user/1 \
     "createdAt": "2025-11-22T13:16:42.142169"
   }
 ]
+```
+
+### Test Case 3.2: Create Account with Invalid Citizen ID ✅
+
+**Explanation:** Account creation should fail if the provided citizen ID doesn't match the user's registered citizen ID.
+
+```bash
+curl -X POST http://localhost:8080/api/accounts/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TELLER_TOKEN" \
+  -d '{
+    "userId": 1,
+    "citizenId": "9999999999999",
+    "accountType": "SAVINGS",
+    "initialBalance": 0
+  }'
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "timestamp": "2025-11-22T10:45:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Citizen ID does not match the user ID. Please verify your citizen ID.",
+  "path": "/api/accounts/create"
+}
+```
+
+### Test Case 3.3: Create Account without Citizen ID ✅
+
+**Explanation:** Account creation should fail if citizen ID is not provided.
+
+```bash
+curl -X POST http://localhost:8080/api/accounts/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TELLER_TOKEN" \
+  -d '{
+    "userId": 1,
+    "accountType": "SAVINGS",
+    "initialBalance": 0
+  }'
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "timestamp": "2025-11-22T10:46:00",
+  "status": 400,
+  "error": "Validation Failed",
+  "message": "Citizen ID is required",
+  "path": "/api/accounts/create"
+}
 ```
 
 ---
@@ -548,9 +604,9 @@ Only CUSTOMERS can login and view their account information.
 
 ### Test Case 5.1: View Own Account Information ✅
 
-**Explanation:** Customer logs in and views their account details.
+**Explanation:** Customer logs in and views their account details. **IMPORTANT: Only users with CUSTOMER role can access account information.**
 
-**Step 1:** Login as customer
+**Step 1:** Login as customer (user must have CUSTOMER role)
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
@@ -561,15 +617,15 @@ curl -X POST http://localhost:8080/api/auth/login \
   }'
 ```
 
-Example response:
+Example response (note the role must be "CUSTOMER"):
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTc2Mzc5MzYwMywiZXhwIjoxNzYzODgwMDAzfQ.hqMUjNuokawWcA7L4VPUTgRRHfSLffBzfbG4G9gkguY",
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQ1VTVE9NRVIiLCJ1c2VySWQiOjEsInN1YiI6ImpvaG5fZG9lIiwiaWF0IjoxNzYzNzkzNjAzLCJleHAiOjE3NjM4ODAwMDN9.hqMUjNuokawWcA7L4VPUTgRRHfSLffBzfbG4G9gkguY",
   "type": "Bearer",
   "userId": 1,
   "username": "john_doe",
-  "role": "PERSON"
+  "role": "CUSTOMER"
 }
 ```
 
@@ -594,7 +650,7 @@ curl -X GET http://localhost:8080/api/accounts/[account id] \
 
 ### Test Case 5.2: View All Accounts by User ID ✅
 
-**Explanation:** Customer views all accounts associated with their user ID.
+**Explanation:** Customer views all accounts associated with their user ID. The token must be from a user with CUSTOMER role.
 
 ```bash
 curl -X GET http://localhost:8080/api/accounts/user/1 \
@@ -617,14 +673,78 @@ curl -X GET http://localhost:8080/api/accounts/user/1 \
 
 ### Test Case 5.3: Unauthorized Access to Another User's Account ✅
 
-**Explanation:** Customer should not be able to access another customer's account (if authorization is properly implemented).
+**Explanation:** Customer should not be able to access another customer's account.
 
 ```bash
 curl -X GET http://localhost:8080/api/accounts/7654321 \
   -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
-**Expected Response:** HTTP 403 Forbidden (if proper authorization is implemented)
+**Expected Response:** HTTP 403 Forbidden
+
+```json
+{
+  "status": 403,
+  "message": "You are not authorized to access this account",
+  "timestamp": "2025-11-22T13:20:00"
+}
+```
+
+### Test Case 5.4: TELLER Tries to View Account Information ✅
+
+**Explanation:** TELLER role should not be able to view account information (only CUSTOMER can).
+
+```bash
+# Login as teller
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "teller_alice",
+    "password": "tellerPass123"
+  }'
+
+# Try to access account (save teller token as $TELLER_TOKEN)
+curl -X GET http://localhost:8080/api/accounts/1234567 \
+  -H "Authorization: Bearer $TELLER_TOKEN"
+```
+
+**Expected Response:** HTTP 403 Forbidden
+
+```json
+{
+  "status": 403,
+  "message": "Only customers are authorized to view account information",
+  "timestamp": "2025-11-22T13:20:00"
+}
+```
+
+### Test Case 5.5: PERSON Tries to View Account Information ✅
+
+**Explanation:** PERSON role should not be able to view account information (only CUSTOMER can).
+
+```bash
+# Login as person
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_person",
+    "password": "personPass123"
+  }'
+
+# Try to access account (save person token as $PERSON_TOKEN)
+curl -X GET http://localhost:8080/api/accounts/1234567 \
+  -H "Authorization: Bearer $PERSON_TOKEN"
+```
+
+**Expected Response:** HTTP 403 Forbidden
+
+```json
+{
+  "status": 403,
+  "message": "Only customers are authorized to view account information",
+  "timestamp": "2025-11-22T13:20:00"
+}
+```
 
 ---
 
@@ -720,14 +840,15 @@ curl -X POST http://localhost:8080/api/transfer \
 
 ### Test Case 6.4: Create Additional Account for User ✅
 
-**Explanation:** User can create additional SAVINGS accounts beyond the default one.
+**Explanation:** Teller can create additional SAVINGS accounts for users beyond the first one. Citizen ID must be provided for verification.
 
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
     "userId": 3,
+    "citizenId": "3101234567890",
     "accountType": "SAVINGS",
     "initialBalance": 0
   }'
@@ -798,14 +919,14 @@ curl -X POST http://localhost:8080/api/transfer \
 
 ### Description
 
-Only CUSTOMER can request their bank statement for a specific month after login with PIN confirmation. Transactions must be displayed from past to present.
+Only CUSTOMER can request their bank statement for a specific month after login with PIN confirmation. **The PIN must be provided as a query parameter** to verify the user's identity before displaying sensitive transaction information. Transactions must be displayed from past to present.
 
 ### Test Case 7.1: Get All Transactions for an Account ✅
 
-**Explanation:** Customer retrieves all transaction history for their account, sorted chronologically.
+**Explanation:** Customer retrieves all transaction history for their account, sorted chronologically. **PIN is required** for security verification.
 
 ```bash
-curl -X GET http://localhost:8080/api/transactions/account/2230070 \
+curl -X GET "http://localhost:8080/api/transactions/account/2230070?pin=111111" \
   -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
@@ -865,11 +986,49 @@ curl -X GET http://localhost:8080/api/transactions/1001 \
 **Explanation:** Customer should not be able to view another customer's transactions.
 
 ```bash
-curl -X GET http://localhost:8080/api/transactions/account/7654321 \
+curl -X GET "http://localhost:8080/api/transactions/account/7654321?pin=111111" \
   -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
 **Expected Response:** HTTP 403 Forbidden (if proper authorization is implemented)
+
+### Test Case 7.4: Get Transactions with Invalid PIN ✅
+
+**Explanation:** Request should fail if PIN is incorrect.
+
+```bash
+curl -X GET "http://localhost:8080/api/transactions/account/2230070?pin=999999" \
+  -H "Authorization: Bearer $CUSTOMER_TOKEN"
+```
+
+**Expected Response:** HTTP 401 Unauthorized
+
+```json
+{
+  "status": 401,
+  "message": "Invalid PIN",
+  "timestamp": "2025-11-22T13:55:00"
+}
+```
+
+### Test Case 7.5: Get Transactions without PIN ✅
+
+**Explanation:** Request should fail if PIN parameter is missing.
+
+```bash
+curl -X GET "http://localhost:8080/api/transactions/account/2230070" \
+  -H "Authorization: Bearer $CUSTOMER_TOKEN"
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "status": 400,
+  "message": "Required request parameter 'pin' is not present",
+  "timestamp": "2025-11-22T13:56:00"
+}
+```
 
 ---
 
@@ -947,7 +1106,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 **Note:** Users must have accounts created by a teller before they can perform banking operations.
 
-**Create account for Alice:**
+**Create account for Alice (must provide her citizen ID for verification):**
 
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
@@ -955,6 +1114,7 @@ curl -X POST http://localhost:8080/api/accounts/create \
   -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
     "userId": 3,
+    "citizenId": "3101234567890",
     "accountType": "SAVINGS",
     "initialBalance": 0
   }'
@@ -962,7 +1122,7 @@ curl -X POST http://localhost:8080/api/accounts/create \
 
 Save the account ID from the response (e.g., "ALICE_ACCOUNT_ID").
 
-**Create account for Bob:**
+**Create account for Bob (must provide his citizen ID for verification):**
 
 ```bash
 curl -X POST http://localhost:8080/api/accounts/create \
@@ -970,6 +1130,7 @@ curl -X POST http://localhost:8080/api/accounts/create \
   -H "Authorization: Bearer $TELLER_TOKEN" \
   -d '{
     "userId": 4,
+    "citizenId": "3109876543210",
     "accountType": "SAVINGS",
     "initialBalance": 0
   }'
@@ -1025,8 +1186,10 @@ curl -X POST http://localhost:8080/api/transfer \
 
 ### Step 9: Alice Views Her Bank Statement
 
+**Note:** PIN is required to view transaction history for security verification.
+
 ```bash
-curl -X GET http://localhost:8080/api/transactions/account/ALICE_ACCOUNT_ID \
+curl -X GET "http://localhost:8080/api/transactions/account/ALICE_ACCOUNT_ID?pin=111111" \
   -H "Authorization: Bearer $ALICE_TOKEN"
 ```
 
@@ -1132,18 +1295,27 @@ curl -X POST http://localhost:8080/api/auth/login \
 4. **Transaction Ordering:** Bank statements show transactions from past to present (chronologically)
 5. **Minimum Deposit:** Deposits must be at least 1 THB
 6. **API Gateway:** All requests go through the API gateway at port 8080 with `/api` prefix
-7. **Account Creation:** Accounts are NOT automatically created during registration. A teller must create accounts for users.
-8. **Registration Requirements:** All users must provide:
+7. **Account Creation:** Accounts are NOT automatically created during registration. A teller must create accounts for users and must provide the user's citizen ID for verification.
+8. **Citizen ID Validation:** When creating a new account, the provided citizen ID must match the user's registered citizen ID to ensure proper identity verification.
+9. **Registration Requirements:** All users must provide:
    - Email (valid format)
    - Password (minimum 6 characters)
    - Citizen ID (exactly 13 digits, Thai national ID)
    - Thai Name (full name in Thai)
    - English Name (full name in English)
    - PIN (exactly 6 digits, used for transactions)
-9. **Security:** 
+10. **Security:** 
    - Passwords and PINs are hashed using BCrypt
    - Citizen ID is masked in responses (shows only first 7 digits + "******")
    - PIN is never returned in API responses
+   - Citizen ID validation prevents unauthorized account creation by verifying identity
+   - **PIN verification required** for viewing transaction history - users must provide their 6-digit PIN as a query parameter (`?pin=123456`) when accessing transaction records
+   - TELLERs can view any transaction without PIN requirement (for customer service purposes)
+11. **Role-Based Authorization:**
+   - **CUSTOMER** role: Can view their own account information (`GET /accounts/{id}`, `GET /accounts/user/{userId}`) and transfer money
+   - **TELLER** role: Can create accounts and make deposits (cannot view account information)
+   - **PERSON** role: Basic registration role (cannot view accounts, transfer, or deposit)
+   - Each endpoint enforces role requirements - attempting to access with wrong role returns HTTP 403 Forbidden
 
 ## Tips for Testing
 

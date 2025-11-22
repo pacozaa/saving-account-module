@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Client as Transfer - Customer - Client
+    participant Gateway as API Gateway
+    participant TransferS as Transfer Service
+    participant TransactionS as Transaction Service
+    participant AccountS as Account Service
+    participant DB_Trans as Transactions DB
+    participant DB_Accts as Accounts DB
+
+    Client->>Gateway: POST /transfers (transfer details)
+    Gateway->>TransferS: Forward transfer request
+    TransferS->>AccountS: Verify from account exists
+    AccountS->>DB_Accts: Query from account
+    DB_Accts-->>AccountS: From account details
+    AccountS-->>TransferS: From account verified
+    TransferS->>AccountS: Verify to account exists
+    AccountS->>DB_Accts: Query to account
+    DB_Accts-->>AccountS: To account details
+    AccountS-->>TransferS: To account verified
+    TransferS->>AccountS: Check sufficient balance
+    AccountS-->>TransferS: Balance sufficient
+    TransferS->>TransactionS: Create transaction record
+    TransactionS->>DB_Trans: Save transaction
+    DB_Trans-->>TransactionS: Transaction saved
+    TransactionS-->>TransferS: Transaction ID
+    TransferS->>AccountS: Debit from account
+    AccountS->>DB_Accts: Update from balance
+    DB_Accts-->>AccountS: Balance updated
+    AccountS-->>TransferS: Debit successful
+    TransferS->>AccountS: Credit to account
+    AccountS->>DB_Accts: Update to balance
+    DB_Accts-->>AccountS: Balance updated
+    AccountS-->>TransferS: Credit successful
+    TransferS-->>Gateway: Transfer successful
+    Gateway-->>Client: 200 OK (transaction details)

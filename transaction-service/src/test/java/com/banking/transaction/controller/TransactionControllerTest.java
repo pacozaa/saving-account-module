@@ -198,10 +198,12 @@ class TransactionControllerTest {
         tx2.setStatus("COMPLETED");
 
         List<TransactionDto> transactions = Arrays.asList(tx1, tx2);
-        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(userId), eq(role))).thenReturn(transactions);
+        String pin = "123456";
+        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(pin), eq(userId), eq(role))).thenReturn(transactions);
 
         // When & Then
         mockMvc.perform(get("/transactions/account/{accountId}", accountId)
+                        .param("pin", pin)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-User-Id", userId)
                         .header("X-User-Role", role))
@@ -212,7 +214,7 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$[1].id").value(1002L))
                 .andExpect(jsonPath("$[1].type").value("WITHDRAWAL"));
 
-        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(userId), eq(role));
+        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(pin), eq(userId), eq(role));
     }
 
     @Test
@@ -222,17 +224,19 @@ class TransactionControllerTest {
         Long accountId = 999L;
         Long userId = 1L;
         String role = "PERSON";
-        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(userId), eq(role))).thenReturn(Arrays.asList());
+        String pin = "123456";
+        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(pin), eq(userId), eq(role))).thenReturn(Arrays.asList());
 
         // When & Then
         mockMvc.perform(get("/transactions/account/{accountId}", accountId)
+                        .param("pin", pin)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-User-Id", userId)
                         .header("X-User-Role", role))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
 
-        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(userId), eq(role));
+        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(pin), eq(userId), eq(role));
     }
 
     @Test

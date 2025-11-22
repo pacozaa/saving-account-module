@@ -70,6 +70,23 @@ public class RegisterController {
         return ResponseEntity.ok(user);
     }
     
+    @PostMapping("/validate-pin")
+    @Operation(summary = "Validate user PIN", description = "Validates if the provided PIN matches the user's stored PIN")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "PIN validation result"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<Boolean> validatePin(
+            @Parameter(description = "User ID", example = "1")
+            @RequestParam Long userId,
+            @Parameter(description = "6-digit PIN", example = "123456")
+            @RequestParam String pin) {
+        log.info("POST /register/validate-pin - userId: {}", userId);
+        
+        boolean isValid = registerService.validatePin(userId, pin);
+        return ResponseEntity.ok(isValid);
+    }
+    
     @GetMapping("/health")
     @Operation(summary = "Health check", description = "Check if the service is running")
     public ResponseEntity<String> health() {

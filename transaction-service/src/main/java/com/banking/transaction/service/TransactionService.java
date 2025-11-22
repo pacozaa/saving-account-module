@@ -1,6 +1,7 @@
 package com.banking.transaction.service;
 
 import com.banking.transaction.client.AccountServiceClient;
+import com.banking.transaction.client.RegisterServiceClient;
 import com.banking.transaction.dto.AccountDto;
 import com.banking.transaction.dto.LogTransactionRequest;
 import com.banking.transaction.dto.TransactionDto;
@@ -24,6 +25,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountServiceClient accountServiceClient;
+    private final RegisterServiceClient registerServiceClient;
 
     @Transactional
     public TransactionDto logTransaction(LogTransactionRequest request) {
@@ -45,13 +47,16 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<TransactionDto> getTransactionsByAccountId(Long accountId, Long authenticatedUserId, String userRole) {
+    public List<TransactionDto> getTransactionsByAccountId(Long accountId, String pin, Long authenticatedUserId, String userRole) {
         log.info("Fetching transactions for account: {} by user: {} with role: {}", accountId, authenticatedUserId, userRole);
         
-        // Only PERSON (customers) need ownership validation
-        // TELLERs can view any transaction
+        // Only PERSON (customers) need ownership validation and PIN verification
+        // TELLERs can view any transaction without PIN
         if ("PERSON".equals(userRole)) {
             validateAccountOwnership(accountId, authenticatedUserId);
+            
+            // Validate PIN for the authenticated user
+            validateUserPin(authenticatedUserId, pin);
         }
         
         List<Transaction> transactions = transactionRepository
@@ -98,6 +103,32 @@ public class TransactionService {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Unable to validate account ownership"
+            );
+        }
+    }
+    
+    private void validateUserPin(Long userId, String pin) {
+        try {
+            log.info("Validating PIN for user: {}", userId);
+            
+            Boolean isValid = registerServiceClient.validatePin(userId, pin);
+            
+            if (isValid == null || !isValid) {
+                log.warn("Invalid PIN provided for user: {}", userId);
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Invalid PIN"
+                );
+            }
+            
+            log.info("PIN validation successful for user: {}", userId);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error validating PIN: {}", e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to validate PIN"
             );
         }
     }

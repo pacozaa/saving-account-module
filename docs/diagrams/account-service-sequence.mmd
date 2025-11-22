@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Client as New Account - Teller - Client
+    participant Gateway as API Gateway
+    participant AccountS as Account Service
+    participant DB_Accts as Accounts DB
+
+    Client->>Gateway: POST /accounts (account details)
+    Gateway->>AccountS: Forward create account request
+    AccountS->>AccountS: Validate account data
+    AccountS->>DB_Accts: Save account information
+    DB_Accts-->>AccountS: Account created
+    AccountS-->>Gateway: Account creation successful
+    Gateway-->>Client: 201 Created (account details)

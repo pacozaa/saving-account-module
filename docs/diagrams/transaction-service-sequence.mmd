@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Client as Transfer - Customer - Client
+    participant Gateway as API Gateway
+    participant TransactionS as Transaction Service
+    participant DB_Trans as Transactions DB
+
+    Client->>Gateway: GET /transactions/account/{accountId}
+    Gateway->>TransactionS: Forward get transactions request
+    TransactionS->>DB_Trans: Query transactions by account ID
+    DB_Trans-->>TransactionS: Transaction records
+    TransactionS-->>Gateway: Transaction history
+    Gateway-->>Client: 200 OK (transaction list)

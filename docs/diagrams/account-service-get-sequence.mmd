@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Client as Transfer - Customer - Client
+    participant Gateway as API Gateway
+    participant AccountS as Account Service
+    participant DB_Accts as Accounts DB
+
+    Client->>Gateway: GET /accounts/{accountId}
+    Gateway->>AccountS: Forward get account request
+    AccountS->>DB_Accts: Query account by ID
+    DB_Accts-->>AccountS: Account details
+    AccountS-->>Gateway: Account information
+    Gateway-->>Client: 200 OK (account details)

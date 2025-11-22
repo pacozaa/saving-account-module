@@ -2,6 +2,7 @@ package com.banking.transfer.service;
 
 import com.banking.transfer.client.AccountClient;
 import com.banking.transfer.client.TransactionClient;
+import com.banking.transfer.client.UserClient;
 import com.banking.transfer.dto.*;
 import com.banking.transfer.exception.AccountNotFoundException;
 import com.banking.transfer.exception.InsufficientFundsException;
@@ -41,6 +42,9 @@ class TransferServiceTest {
     @Mock
     private TransactionClient transactionClient;
 
+    @Mock
+    private UserClient userClient;
+
     @InjectMocks
     private TransferService transferService;
 
@@ -59,6 +63,7 @@ class TransferServiceTest {
                 101L,
                 102L,
                 new BigDecimal("500.00"),
+                "123456",
                 "Payment for services"
         );
 
@@ -124,6 +129,7 @@ class TransferServiceTest {
     @Test
     void testTransfer_Success_UpdatesBothAccountsAndLogsTransactions() {
         // Given
+        when(userClient.validatePin(AUTHENTICATED_USER_ID, "123456")).thenReturn(true);
         when(accountClient.getAccount("101")).thenReturn(senderAccount);
         when(accountClient.getAccount("102")).thenReturn(receiverAccount);
         when(accountClient.updateBalance(eq("101"), any(UpdateBalanceRequest.class)))
@@ -166,6 +172,7 @@ class TransferServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        when(userClient.validatePin(AUTHENTICATED_USER_ID, "123456")).thenReturn(true);
         when(accountClient.getAccount("101")).thenReturn(poorSenderAccount);
 
         // When & Then
@@ -186,8 +193,11 @@ class TransferServiceTest {
                 101L,
                 101L,
                 new BigDecimal("500.00"),
+                "123456",
                 "Same account transfer"
         );
+
+        when(userClient.validatePin(AUTHENTICATED_USER_ID, "123456")).thenReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> transferService.transfer(sameAccountRequest, AUTHENTICATED_USER_ID))
@@ -207,6 +217,7 @@ class TransferServiceTest {
         FeignException.NotFound notFound = new FeignException.NotFound(
                 "Account not found", request, null, null);
 
+        when(userClient.validatePin(AUTHENTICATED_USER_ID, "123456")).thenReturn(true);
         when(accountClient.getAccount("101")).thenThrow(notFound);
 
         // When & Then
@@ -224,6 +235,7 @@ class TransferServiceTest {
     @Test
     void testTransfer_ReceiverAccountNotFound_ThrowsException() {
         // Given - receiver account not found
+        when(userClient.validatePin(AUTHENTICATED_USER_ID, "123456")).thenReturn(true);
         when(accountClient.getAccount("101")).thenReturn(senderAccount);
 
         Request request = Request.create(Request.HttpMethod.GET, "/accounts/102",
@@ -249,6 +261,7 @@ class TransferServiceTest {
     void testTransfer_UnauthorizedUser_ThrowsException() {
         // Given - user trying to transfer from account they don't own
         Long unauthorizedUserId = 999L;
+        when(userClient.validatePin(unauthorizedUserId, "123456")).thenReturn(true);
         when(accountClient.getAccount("101")).thenReturn(senderAccount);
 
         // When & Then

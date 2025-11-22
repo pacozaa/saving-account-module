@@ -28,6 +28,10 @@ public class TransferRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
     private BigDecimal amount;
 
+    @Schema(description = "6-digit PIN for authorization", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "PIN is required")
+    private String pin;
+
     @Schema(description = "Transfer description", example = "Payment for services")
     private String description;
 }

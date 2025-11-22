@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Client as Registration - Person - Client
+    participant Gateway as API Gateway
+    participant RegisterS as Register Service
+    participant DB_Users as Users DB
+
+    Client->>Gateway: POST /register (user details)
+    Gateway->>RegisterS: Forward registration request
+    RegisterS->>RegisterS: Validate user data
+    RegisterS->>DB_Users: Save user information
+    DB_Users-->>RegisterS: User created
+    RegisterS-->>Gateway: Registration successful
+    Gateway-->>Client: 201 Created (user details)

@@ -50,6 +50,7 @@ class TransferControllerTest {
                 101L,
                 102L,
                 new BigDecimal("500.00"),
+                "123456",
                 "Payment for services"
         );
 
@@ -94,6 +95,7 @@ class TransferControllerTest {
                 null, // missing from account ID
                 102L,
                 new BigDecimal("500.00"),
+                "123456",
                 "Payment"
         );
 
@@ -114,6 +116,7 @@ class TransferControllerTest {
                 101L,
                 null, // missing to account ID
                 new BigDecimal("500.00"),
+                "123456",
                 "Payment"
         );
 
@@ -134,6 +137,7 @@ class TransferControllerTest {
                 101L,
                 102L,
                 null, // missing amount
+                "123456",
                 "Payment"
         );
 
@@ -153,7 +157,8 @@ class TransferControllerTest {
         TransferRequest invalidRequest = new TransferRequest(
                 101L,
                 102L,
-                new BigDecimal("-100.00"), // negative amount
+                new BigDecimal("-100.00"),  // Invalid
+                "123456",
                 "Payment"
         );
 
@@ -174,6 +179,7 @@ class TransferControllerTest {
                 101L,
                 102L,
                 new BigDecimal("0.00"), // zero amount
+                "123456",
                 "Payment"
         );
 
