@@ -1,0 +1,41 @@
+flowchart TD
+    %% Entity Definitions
+    Customer(Customer)
+    Person(Person)
+    Teller(Teller)
+    System(Saving Account -<br>Banking System)
+
+    %% Action Block Definitions
+    ActionsLeft["1. Request Statement<br>2. See Account Info<br>3. Transfer Money"]
+    ActionRegister["1. Register"]
+    ActionsRight["1. Deposit Money into<br>Account<br>2. Open New Account"]
+
+    %% Styling
+    %% Entities: Rounded corners, white fill, thick stroke
+    style Customer fill:#fff,stroke:#000,stroke-width:2px,rx:10,ry:10
+    style Person fill:#fff,stroke:#000,stroke-width:2px,rx:10,ry:10
+    style Teller fill:#fff,stroke:#000,stroke-width:2px,rx:10,ry:10
+    style System fill:#fff,stroke:#000,stroke-width:2px,rx:10,ry:10
+
+    %% Action Blocks: Dashed stroke, square corners
+    style ActionsLeft fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+    style ActionRegister fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+    style ActionsRight fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+
+    %% Connections (Flow)
+    
+    %% Left Column Flow
+    Customer --> ActionsLeft
+    ActionsLeft --> System
+
+    %% Center Column Flow
+    Person --> ActionRegister
+    ActionRegister --> System
+
+    %% Right Column / Cross Connections
+    %% Note: Using specific link styles or directions to mimic the overhead lines
+    Customer --> ActionsRight
+    Person --> ActionsRight
+    
+    ActionsRight --> Teller
+    Teller --> System

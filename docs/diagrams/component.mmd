@@ -1,0 +1,53 @@
+graph LR
+    %% Client Layer
+    Client1("Registration - Person - Client")
+    Client2("Transfer - Customer - Client")
+    Client3("Deposit - Teller - Client")
+    Client4("New Account - Teller - Client")
+
+    %% Gateway Layer
+    Gateway("API Gateway")
+
+    %% Microservices Layer 1
+    AuthS("Auth Service")
+    DepositS("Deposit Service")
+    TransferS("Transfer Service")
+    RegisterS("Register Service")
+
+    %% Microservices Layer 2 (Aggregators/Processors)
+    TransactionS("Transaction Service")
+    AccountS("Account Service")
+
+    %% Database Layer
+    DB_Trans[("Transactions DB")]
+    DB_Accts[("Accounts DB")]
+    DB_Users[("Users DB")]
+
+    %% Connections: Clients to Gateway
+    Client1 --> Gateway
+    Client2 --> Gateway
+    Client3 --> Gateway
+    Client4 --> Gateway
+
+    %% Connections: Gateway to Services
+    Gateway --> AuthS
+    Gateway --> DepositS
+    Gateway --> TransferS
+    Gateway --> AccountS
+    Gateway --> RegisterS
+
+    %% Connections: Service Inter-communication
+    AuthS --> TransactionS
+    DepositS --> TransactionS
+    DepositS --> AccountS
+    TransferS --> TransactionS
+    TransferS --> AccountS
+
+    %% Connections: Services to Databases
+    TransactionS --> DB_Trans
+    AccountS --> DB_Accts
+    RegisterS --> DB_Users
+
+    %% Styling to match the image shapes roughly
+    classDef db fill:#fff,stroke:#000,stroke-width:2px;
+    class DB_Trans,DB_Accts,DB_Users db;

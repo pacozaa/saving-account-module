@@ -1,0 +1,25 @@
+graph LR
+    %% Input/Actor Nodes
+    %% Using <br> to match the multi-line text in the boxes
+    Customer("Customer")
+    Person("Person")
+    Teller("Teller")
+
+    %% Middleware Nodes
+    Gateway("API Gateway")
+    Services("Services")
+
+    %% Database Node
+    %% The [()] syntax creates the cylinder shape
+    DB[("Main DB")]
+
+    %% Connections
+    Customer --> Gateway
+    Person --> Gateway
+    Teller --> Gateway
+
+    Gateway --> Services
+    Services --> DB
+
+    %% Optional Styling to match the blue database color
+    style DB fill:#2980b9,stroke:#000,stroke-width:2px,color:white
