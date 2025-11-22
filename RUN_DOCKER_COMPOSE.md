@@ -20,10 +20,10 @@ This guide explains how to build, run, and test the microservices using Docker C
 ./docker-start.sh
 
 # 3. Check status
-docker-compose ps
+docker compose ps
 
 # 4. View logs
-docker-compose logs -f
+docker compose logs -f
 
 # 5. Stop all services
 ./docker-stop.sh
@@ -33,19 +33,19 @@ docker-compose logs -f
 
 ```bash
 # 1. Build all Maven modules
-./mvnw clean package -DskipTests
+mvn clean package -DskipTests
 
 # 2. Build Docker images
-docker-compose build
+docker compose build
 
 # 3. Start all services in detached mode
-docker-compose up -d
+docker compose up -d
 
 # 4. Stop all services
-docker-compose down
+docker compose down
 
 # 5. Stop and remove volumes (clean slate)
-docker-compose down -v
+docker compose down -v
 ```
 
 ## Service Startup Order
@@ -67,7 +67,7 @@ Docker Compose handles the startup sequence automatically:
 
 ```bash
 # View all running containers
-docker-compose ps
+docker compose ps
 
 # Should show all 8 services as "Up"
 ```
@@ -222,15 +222,15 @@ Expected response: `200 OK` with list of transactions
 ### View Logs for All Services
 
 ```bash
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### View Logs for a Specific Service
 
 ```bash
-docker-compose logs -f api-gateway
-docker-compose logs -f auth-service
-docker-compose logs -f account-service
+docker compose logs -f api-gateway
+docker compose logs -f auth-service
+docker compose logs -f account-service
 # etc.
 ```
 
@@ -290,10 +290,10 @@ lsof -i :8761
 
 ```bash
 # Check Eureka logs
-docker-compose logs eureka-server
+docker compose logs eureka-server
 
 # Restart a specific service
-docker-compose restart auth-service
+docker compose restart auth-service
 
 # Wait 30-60 seconds for registration
 ```
@@ -302,7 +302,7 @@ docker-compose restart auth-service
 
 ```bash
 # Remove all volumes and start fresh
-docker-compose down -v
+docker compose down -v
 ./docker-build.sh
 ./docker-start.sh
 ```
@@ -324,7 +324,7 @@ docker-compose down -v
 ls -la */target/*.jar
 
 # Rebuild specific service
-docker-compose build --no-cache auth-service
+docker compose build --no-cache auth-service
 ```
 
 ## Complete Test Workflow Example
@@ -386,19 +386,19 @@ curl -X GET "http://localhost:8080/api/transactions?accountId=$ACCOUNT_ID" \
 ### Stop Services (Keep Data)
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### Stop Services and Remove Data
 
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ### Remove All Images
 
 ```bash
-docker-compose down --rmi all -v
+docker compose down --rmi all -v
 ```
 
 ## Performance Tips
@@ -415,7 +415,7 @@ Database data is stored in Docker volumes:
 - `account-data` - Account information
 - `transaction-data` - Transaction history
 
-Data persists across container restarts unless you use `docker-compose down -v`.
+Data persists across container restarts unless you use `docker compose down -v`.
 
 ## Next Steps
 
@@ -427,7 +427,7 @@ Data persists across container restarts unless you use `docker-compose down -v`.
 ## Support
 
 If you encounter issues:
-1. Check the logs: `docker-compose logs -f`
+1. Check the logs: `docker compose logs -f`
 2. Verify Eureka dashboard: http://localhost:8761
 3. Ensure all JARs are built: `ls -la */target/*.jar`
 4. Review `DOCKER_FIXES.md` for configuration details

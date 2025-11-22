@@ -401,7 +401,7 @@ Based on the microservices architecture with:
 ### **Phase 5: Polish & Integration (Hours 38-48)**
 
 #### Hour 38-42: Docker Compose
-- [ ] Create `docker-compose.yml`:
+- [ ] Create `docker compose.yml`:
   ```yaml
   version: '3.8'
   services:
@@ -427,7 +427,7 @@ Based on the microservices architecture with:
     # Add other services...
   ```
 - [ ] Create Dockerfiles for each service
-- [ ] Test `docker-compose up`
+- [ ] Test `docker compose up`
 - [ ] Verify service discovery and routing
 
 #### Hour 42-44: Documentation
@@ -533,7 +533,7 @@ Based on the microservices architecture with:
 - **Add user lookup endpoint to Register Service**
   - Add GET /register/users/username/{username} endpoint for Auth Service integration
 - **Docker Compose and Documentation (Hour 38-48)**
-  - Create docker-compose.yml for all services
+  - Create docker compose.yml for all services
   - Complete README documentation
   - Final integration testing
 
@@ -628,7 +628,7 @@ Based on the microservices architecture with:
 ## Delivery Checklist
 
 - [ ] All 8 services running
-- [ ] `docker-compose up` starts entire system
+- [ ] `docker compose up` starts entire system
 - [ ] README.md with setup instructions
 - [ ] Postman collection with example requests
 - [ ] Architecture matches provided diagram

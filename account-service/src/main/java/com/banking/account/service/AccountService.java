@@ -116,11 +116,12 @@ public class AccountService {
         return mapToDto(account);
     }
     
-    @Transactional
+    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.SERIALIZABLE)
     public AccountDto updateBalance(String accountId, BigDecimal amount) {
         log.info("Updating balance for account: {} by amount: {}", accountId, amount);
         
-        Account account = accountRepository.findById(accountId)
+        // Use pessimistic locking to prevent concurrent modifications and race conditions
+        Account account = accountRepository.findByIdForUpdate(accountId)
             .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + accountId));
         
         BigDecimal newBalance = account.getBalance().add(amount);

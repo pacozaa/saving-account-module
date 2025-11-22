@@ -12,11 +12,11 @@
 - Changed `ddl-auto` from `create-drop` to `update` for data persistence
 
 ### 2. ✅ Dockerfile Build Context Issues
-**Problem:** Each Dockerfile tried to copy from parent directory (`COPY ../pom.xml`) which doesn't work with docker-compose build context.
+**Problem:** Each Dockerfile tried to copy from parent directory (`COPY ../pom.xml`) which doesn't work with docker compose build context.
 
 **Solution:** Simplified all Dockerfiles to use pre-built JARs:
 - Removed multi-stage build with Maven
-- Now expects JARs to be built before `docker-compose build`
+- Now expects JARs to be built before `docker compose build`
 - Updated `docker-build.sh` to run `./mvnw clean package` first
 
 ### 3. ✅ Database Volume Mounts
@@ -45,16 +45,16 @@
 ./mvnw clean package -DskipTests
 
 # 2. Build Docker images
-docker-compose build
+docker compose build
 
 # 3. Start all services
-docker-compose up -d
+docker compose up -d
 
 # 4. View logs
-docker-compose logs -f
+docker compose logs -f
 
 # 5. Stop all services
-docker-compose down
+docker compose down
 ```
 
 ### Verify Services
@@ -76,7 +76,7 @@ docker-compose down
 
 ### Modified Files
 - All 8 Dockerfiles (simplified to use pre-built JARs)
-- `docker-compose.yml` (added volume mounts)
+- `docker compose.yml` (added volume mounts)
 - `docker-build.sh` (added Maven build step)
 
 ## Key Configuration Changes
@@ -96,7 +96,7 @@ docker-compose down
 ## Verification Checklist
 
 - [x] All services have `application-docker.yml` with correct Eureka URL
-- [x] All Dockerfiles work with docker-compose build context
+- [x] All Dockerfiles work with docker compose build context
 - [x] Database services have volume mounts for persistence
 - [x] Service dependencies properly configured
 - [x] Health checks configured for Eureka

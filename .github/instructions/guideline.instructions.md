@@ -135,7 +135,7 @@ This is where the "Business Logic" logic happens (The Deposit and Transfer servi
 If you have time left, add these to stand out:
 
 1.  **Docker Compose:**
-    Create a `docker-compose.yml` at the root. Define services for Postgres, RabbitMQ (if used), and Zipkin.
+    Create a `docker compose.yml` at the root. Define services for Postgres, RabbitMQ (if used), and Zipkin.
     *   *Impressive factor:* "I can start the whole architecture with one command."
 
 2.  **Swagger/OpenAPI:**

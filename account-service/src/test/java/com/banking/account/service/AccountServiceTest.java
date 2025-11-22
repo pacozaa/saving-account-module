@@ -112,7 +112,7 @@ class AccountServiceTest {
             .createdAt(LocalDateTime.now())
             .build();
         
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+        when(accountRepository.findByIdForUpdate(accountId)).thenReturn(Optional.of(testAccount));
         when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
         
         // When
@@ -121,7 +121,7 @@ class AccountServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getBalance()).isEqualTo(expectedBalance);
-        verify(accountRepository).findById(accountId);
+        verify(accountRepository).findByIdForUpdate(accountId);
         verify(accountRepository).save(any(Account.class));
     }
     
@@ -131,14 +131,14 @@ class AccountServiceTest {
         String accountId = "1234567";
         BigDecimal amount = new BigDecimal("-1500.00"); // More than current balance
         
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+        when(accountRepository.findByIdForUpdate(accountId)).thenReturn(Optional.of(testAccount));
         
         // When & Then
         assertThatThrownBy(() -> accountService.updateBalance(accountId, amount))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Insufficient funds");
         
-        verify(accountRepository).findById(accountId);
+        verify(accountRepository).findByIdForUpdate(accountId);
         verify(accountRepository, never()).save(any(Account.class));
     }
     
@@ -148,14 +148,14 @@ class AccountServiceTest {
         String accountId = "9999999";
         BigDecimal amount = new BigDecimal("100.00");
         
-        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+        when(accountRepository.findByIdForUpdate(accountId)).thenReturn(Optional.empty());
         
         // When & Then
         assertThatThrownBy(() -> accountService.updateBalance(accountId, amount))
             .isInstanceOf(AccountNotFoundException.class)
             .hasMessageContaining("Account not found with id: " + accountId);
         
-        verify(accountRepository).findById(accountId);
+        verify(accountRepository).findByIdForUpdate(accountId);
         verify(accountRepository, never()).save(any(Account.class));
     }
     

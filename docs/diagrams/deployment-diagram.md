@@ -277,9 +277,9 @@ All services expose health check endpoints via Spring Boot Actuator:
 # Stop containers
 ./docker-stop.sh
 
-# Or use docker-compose directly
-docker-compose up -d
-docker-compose down
+# Or use docker compose directly
+docker compose up -d
+docker compose down
 ```
 
 ## Network Flow Summary

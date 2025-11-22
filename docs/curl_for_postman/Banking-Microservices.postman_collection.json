@@ -1,0 +1,1740 @@
+{
+	"info": {
+		"_postman_id": "banking-microservices-collection",
+		"name": "Banking Microservices",
+		"description": "Complete API collection for Banking Microservices - Saving Account Module\n\nThis collection includes:\n- Auth Service - Authentication and JWT token management\n- Register Service - User registration and management\n- Account Service - Bank account management\n- Deposit Service - Deposit operations (TELLER only)\n- Transfer Service - Fund transfer operations\n- Transaction Service - Transaction history and logging\n\nBase URL: http://localhost:8080\nAPI Gateway Port: 8080\n\nLast Updated: November 22, 2025",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "alice_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bob_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teller_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "alice_user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bob_user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "teller_user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "alice_account_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bob_account_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
+									"    console.log(\"Token saved: \" + jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_user\",\n  \"password\": \"alicePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticates user credentials and returns a JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"alice_token\", jsonData.token);",
+									"    pm.collectionVariables.set(\"alice_user_id\", jsonData.userId);",
+									"    console.log(\"Alice Token: \" + jsonData.token);",
+									"    console.log(\"Alice User ID: \" + jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_user\",\n  \"password\": \"alicePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as Alice and save token"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"bob_token\", jsonData.token);",
+									"    pm.collectionVariables.set(\"bob_user_id\", jsonData.userId);",
+									"    console.log(\"Bob Token: \" + jsonData.token);",
+									"    console.log(\"Bob User ID: \" + jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_user\",\n  \"password\": \"bobPass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as Bob and save token"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Teller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"teller_token\", jsonData.token);",
+									"    pm.collectionVariables.set(\"teller_user_id\", jsonData.userId);",
+									"    console.log(\"Teller Token: \" + jsonData.token);",
+									"    console.log(\"Teller User ID: \" + jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"teller_user\",\n  \"password\": \"tellerPass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as Teller and save token"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Token",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"validate"
+							]
+						},
+						"description": "Validates a JWT token and returns token information."
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"health"
+							]
+						},
+						"description": "Check if the auth service is running."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication and JWT token management"
+		},
+		{
+			"name": "Register Service",
+			"item": [
+				{
+					"name": "Register Customer - Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"alice_user_id\", jsonData.user.id);",
+									"        console.log(\"Alice User ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_user\",\n  \"password\": \"alicePass123\",\n  \"email\": \"alice@example.com\",\n  \"citizenId\": \"3101234567890\",\n  \"thaiName\": \"อลิซ คัสโตเมอร์\",\n  \"englishName\": \"Alice Customer\",\n  \"pin\": \"111111\",\n  \"role\": \"CUSTOMER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Register a new customer user - Alice"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Customer - Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"bob_user_id\", jsonData.user.id);",
+									"        console.log(\"Bob User ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_user\",\n  \"password\": \"bobPass123\",\n  \"email\": \"bob@example.com\",\n  \"citizenId\": \"3119876543210\",\n  \"thaiName\": \"บ็อบ คัสโตเมอร์\",\n  \"englishName\": \"Bob Customer\",\n  \"pin\": \"222222\",\n  \"role\": \"CUSTOMER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Register a new customer user - Bob"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Teller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"teller_user_id\", jsonData.user.id);",
+									"        console.log(\"Teller User ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"teller_user\",\n  \"password\": \"tellerPass123\",\n  \"email\": \"teller@bank.com\",\n  \"citizenId\": \"3129876543210\",\n  \"thaiName\": \"เทลเลอร์ ธนาคาร\",\n  \"englishName\": \"Bank Teller\",\n  \"pin\": \"999999\",\n  \"role\": \"TELLER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Register a new teller user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Username",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/register/user/alice_user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"user",
+								"alice_user"
+							]
+						},
+						"description": "Retrieves user information by username"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/register/user/id/{{alice_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"user",
+								"id",
+								"{{alice_user_id}}"
+							]
+						},
+						"description": "Retrieves user information by user ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate PIN",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/register/validate-pin?userId={{alice_user_id}}&pin=111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"validate-pin"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "{{alice_user_id}}"
+								},
+								{
+									"key": "pin",
+									"value": "111111"
+								}
+							]
+						},
+						"description": "Validates if the provided PIN matches the user's stored PIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/register/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"health"
+							]
+						},
+						"description": "Check if the register service is running"
+					},
+					"response": []
+				}
+			],
+			"description": "User registration and management"
+		},
+		{
+			"name": "Account Service",
+			"item": [
+				{
+					"name": "Create Account - Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set(\"alice_account_id\", jsonData.id);",
+									"        console.log(\"Alice Account ID: \" + jsonData.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{alice_user_id}},\n  \"citizenId\": \"3101234567890\",\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 10000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"create"
+							]
+						},
+						"description": "Create a new account for Alice (requires TELLER role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account - Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set(\"bob_account_id\", jsonData.id);",
+									"        console.log(\"Bob Account ID: \" + jsonData.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{bob_user_id}},\n  \"citizenId\": \"3119876543210\",\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"create"
+							]
+						},
+						"description": "Create a new account for Bob (requires TELLER role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Account by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/accounts/{{alice_account_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{alice_account_id}}"
+							]
+						},
+						"description": "Retrieves account details by account ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Accounts by User ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/accounts/user/{{alice_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"user",
+								"{{alice_user_id}}"
+							]
+						},
+						"description": "Retrieves all accounts for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Account Balance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 5000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/{{alice_account_id}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{alice_account_id}}",
+								"balance"
+							]
+						},
+						"description": "Updates account balance (internal use by orchestrator services)"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/accounts/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"health"
+							]
+						},
+						"description": "Check if the account service is running"
+					},
+					"response": []
+				}
+			],
+			"description": "Bank account management"
+		},
+		{
+			"name": "Deposit Service",
+			"item": [
+				{
+					"name": "Make Deposit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{bob_account_id}}\",\n  \"amount\": 5000.00,\n  \"tellerId\": {{teller_user_id}},\n  \"description\": \"Initial deposit\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/deposit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deposit"
+							]
+						},
+						"description": "Deposits money into a specified account (requires TELLER role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Deposit - Cash",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{alice_account_id}}\",\n  \"amount\": 5000.00,\n  \"tellerId\": {{teller_user_id}},\n  \"description\": \"Cash deposit\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/deposit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deposit"
+							]
+						},
+						"description": "Cash deposit example"
+					},
+					"response": []
+				},
+				{
+					"name": "Deposit - Check",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{alice_account_id}}\",\n  \"amount\": 2500.00,\n  \"tellerId\": {{teller_user_id}},\n  \"description\": \"Check deposit\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/deposit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deposit"
+							]
+						},
+						"description": "Check deposit example"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/deposit/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deposit",
+								"health"
+							]
+						},
+						"description": "Check if the deposit service is running"
+					},
+					"response": []
+				}
+			],
+			"description": "Deposit operations (TELLER only)"
+		},
+		{
+			"name": "Transfer Service",
+			"item": [
+				{
+					"name": "Transfer Funds",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fromAccountId\": \"{{alice_account_id}}\",\n  \"toAccountId\": \"{{bob_account_id}}\",\n  \"amount\": 3000.00,\n  \"pin\": \"111111\",\n  \"description\": \"Payment to Bob\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transfer"
+							]
+						},
+						"description": "Transfers money from one account to another (requires PIN validation)"
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer - Rent Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fromAccountId\": \"{{alice_account_id}}\",\n  \"toAccountId\": \"{{bob_account_id}}\",\n  \"amount\": 1500.00,\n  \"pin\": \"111111\",\n  \"description\": \"November rent payment\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transfer"
+							]
+						},
+						"description": "Monthly rent payment example"
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer - Split Bill",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fromAccountId\": \"{{alice_account_id}}\",\n  \"toAccountId\": \"{{bob_account_id}}\",\n  \"amount\": 750.00,\n  \"pin\": \"111111\",\n  \"description\": \"Restaurant bill split\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transfer"
+							]
+						},
+						"description": "Split bill example"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transfer/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transfer",
+								"health"
+							]
+						},
+						"description": "Check if the transfer service is running"
+					},
+					"response": []
+				}
+			],
+			"description": "Fund transfer operations"
+		},
+		{
+			"name": "Transaction Service",
+			"item": [
+				{
+					"name": "Get Transactions by Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transactions/account/{{alice_account_id}}?pin=111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"account",
+								"{{alice_account_id}}"
+							],
+							"query": [
+								{
+									"key": "pin",
+									"value": "111111"
+								}
+							]
+						},
+						"description": "Retrieves transaction history for a specific account (requires PIN validation)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bob's Transactions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{bob_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transactions/account/{{bob_account_id}}?pin=222222",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"account",
+								"{{bob_account_id}}"
+							],
+							"query": [
+								{
+									"key": "pin",
+									"value": "222222"
+								}
+							]
+						},
+						"description": "Get Bob's transaction history"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transactions/1001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"1001"
+							]
+						},
+						"description": "Retrieves a specific transaction by its ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Log Transaction (Internal)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{alice_account_id}}\",\n  \"amount\": 5000.00,\n  \"type\": \"DEPOSIT\",\n  \"description\": \"Cash deposit\",\n  \"balanceAfter\": 15000.00,\n  \"createdBy\": {{teller_user_id}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions"
+							]
+						},
+						"description": "Records a new transaction (used internally by orchestrator services)"
+					},
+					"response": []
+				}
+			],
+			"description": "Transaction history and logging"
+		},
+		{
+			"name": "E2E Test Flow",
+			"item": [
+				{
+					"name": "1. Register Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"alice_user_id\", jsonData.user.id);",
+									"        console.log(\"✓ Alice registered with ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_user\",\n  \"password\": \"alicePass123\",\n  \"email\": \"alice@example.com\",\n  \"citizenId\": \"3101234567890\",\n  \"thaiName\": \"อลิซ คัสโตเมอร์\",\n  \"englishName\": \"Alice Customer\",\n  \"pin\": \"111111\",\n  \"role\": \"CUSTOMER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Register Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"bob_user_id\", jsonData.user.id);",
+									"        console.log(\"✓ Bob registered with ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_user\",\n  \"password\": \"bobPass123\",\n  \"email\": \"bob@example.com\",\n  \"citizenId\": \"3119876543210\",\n  \"thaiName\": \"บ็อบ คัสโตเมอร์\",\n  \"englishName\": \"Bob Customer\",\n  \"pin\": \"222222\",\n  \"role\": \"CUSTOMER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Register Teller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set(\"teller_user_id\", jsonData.user.id);",
+									"        console.log(\"✓ Teller registered with ID: \" + jsonData.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"teller_user\",\n  \"password\": \"tellerPass123\",\n  \"email\": \"teller@bank.com\",\n  \"citizenId\": \"3129876543210\",\n  \"thaiName\": \"เทลเลอร์ ธนาคาร\",\n  \"englishName\": \"Bank Teller\",\n  \"pin\": \"999999\",\n  \"role\": \"TELLER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login as Teller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"teller_token\", jsonData.token);",
+									"    pm.collectionVariables.set(\"teller_user_id\", jsonData.userId);",
+									"    console.log(\"✓ Teller logged in\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"teller_user\",\n  \"password\": \"tellerPass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Create Alice's Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set(\"alice_account_id\", jsonData.id);",
+									"        console.log(\"✓ Alice's account created: \" + jsonData.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{alice_user_id}},\n  \"citizenId\": \"3101234567890\",\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 10000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Create Bob's Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set(\"bob_account_id\", jsonData.id);",
+									"        console.log(\"✓ Bob's account created: \" + jsonData.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": {{bob_user_id}},\n  \"citizenId\": \"3119876543210\",\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/accounts/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Deposit to Bob's Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log(\"✓ Deposit successful\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{teller_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{bob_account_id}}\",\n  \"amount\": 5000.00,\n  \"tellerId\": {{teller_user_id}},\n  \"description\": \"Initial deposit for Bob\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/deposit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"deposit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Login as Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"alice_token\", jsonData.token);",
+									"    console.log(\"✓ Alice logged in\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_user\",\n  \"password\": \"alicePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Alice Transfers to Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log(\"✓ Transfer successful\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fromAccountId\": \"{{alice_account_id}}\",\n  \"toAccountId\": \"{{bob_account_id}}\",\n  \"amount\": 3000.00,\n  \"pin\": \"111111\",\n  \"description\": \"Payment to Bob\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. View Alice's Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var accounts = pm.response.json();",
+									"    console.log(\"✓ Alice's balance: \" + accounts[0].balance + \" THB\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/accounts/user/{{alice_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"user",
+								"{{alice_user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. View Alice's Transactions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var transactions = pm.response.json();",
+									"    console.log(\"✓ Alice has \" + transactions.length + \" transactions\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{alice_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/transactions/account/{{alice_account_id}}?pin=111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								"account",
+								"{{alice_account_id}}"
+							],
+							"query": [
+								{
+									"key": "pin",
+									"value": "111111"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Complete end-to-end test flow for the banking system"
+		}
+	]
+}
