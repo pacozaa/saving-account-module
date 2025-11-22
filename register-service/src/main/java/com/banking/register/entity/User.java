@@ -29,6 +29,18 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
     
+    @Column(nullable = false, unique = true, length = 13)
+    private String citizenId; // Thai national ID (13 digits)
+    
+    @Column(nullable = false, length = 100)
+    private String thaiName;
+    
+    @Column(nullable = false, length = 100)
+    private String englishName;
+    
+    @Column(nullable = false, length = 255)
+    private String pin; // BCrypt hashed 6-digit PIN
+    
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private UserRole role; // PERSON, CUSTOMER, TELLER

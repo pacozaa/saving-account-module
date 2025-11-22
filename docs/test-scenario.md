@@ -27,7 +27,7 @@ A new PERSON registers online by providing email, password, and personal informa
 
 ### Test Case 1.1: Successful Registration as PERSON ✅
 
-**Explanation:** New person creates an account with valid credentials.
+**Explanation:** New person creates an account with valid credentials including Thai citizen ID, Thai name, English name, and 6-digit PIN.
 
 ```bash
 curl -X POST http://localhost:8080/api/register \
@@ -36,6 +36,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "john_doe",
     "password": "securePass123",
     "email": "john.doe@example.com",
+    "citizenId": "1234567890123",
+    "thaiName": "สมชาย ใจดี",
+    "englishName": "Somchai Jaidee",
+    "pin": "123456",
     "role": "PERSON"
   }'
 ```
@@ -48,11 +52,14 @@ curl -X POST http://localhost:8080/api/register \
     "id": 1,
     "username": "john_doe",
     "email": "john.doe@example.com",
+    "citizenId": "1234567******",
+    "thaiName": "สมชาย ใจดี",
+    "englishName": "Somchai Jaidee",
     "role": "PERSON",
     "registeredAt": "2025-11-22T10:30:00"
   },
-  "defaultAccountId": 1234567,
-  "message": "User registered successfully with default account"
+  "defaultAccountId": null,
+  "message": "User registered successfully"
 }
 ```
 
@@ -67,6 +74,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "john_doe",
     "password": "anotherPass456",
     "email": "different.email@example.com",
+    "citizenId": "9876543210987",
+    "thaiName": "สมหญิง ดีใจ",
+    "englishName": "Somying Deejai",
+    "pin": "654321",
     "role": "PERSON"
   }'
 ```
@@ -92,6 +103,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "jane_smith",
     "password": "password123",
     "email": "invalid-email",
+    "citizenId": "5555555555555",
+    "thaiName": "สมศรี สวยงาม",
+    "englishName": "Somsri Suayngam",
+    "pin": "111111",
     "role": "PERSON"
   }'
 ```
@@ -106,7 +121,94 @@ curl -X POST http://localhost:8080/api/register \
 }
 ```
 
-### Test Case 1.4: Register TELLER User ✅
+### Test Case 1.4: Registration with Duplicate Citizen ID ✅
+
+**Explanation:** Registration should fail when citizen ID is already registered.
+
+```bash
+curl -X POST http://localhost:8080/api/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "another_user",
+    "password": "password123",
+    "email": "another@example.com",
+    "citizenId": "1234567890123",
+    "thaiName": "คนอื่น อื่น",
+    "englishName": "Another Person",
+    "pin": "888888",
+    "role": "PERSON"
+  }'
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "code": "400",
+  "message": "Citizen ID '1234567890123' is already registered",
+  "timestamp": "2025-11-22T10:42:00Z"
+}
+```
+
+### Test Case 1.5: Registration with Invalid Citizen ID Format ✅
+
+**Explanation:** Registration should fail when citizen ID is not exactly 13 digits.
+
+```bash
+curl -X POST http://localhost:8080/api/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "password": "password123",
+    "email": "test@example.com",
+    "citizenId": "12345",
+    "thaiName": "ทดสอบ ระบบ",
+    "englishName": "Test System",
+    "pin": "777777",
+    "role": "PERSON"
+  }'
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "code": "400",
+  "message": "Citizen ID must be exactly 13 digits",
+  "timestamp": "2025-11-22T10:43:00Z"
+}
+```
+
+### Test Case 1.6: Registration with Invalid PIN Format ✅
+
+**Explanation:** Registration should fail when PIN is not exactly 6 digits.
+
+```bash
+curl -X POST http://localhost:8080/api/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "pin_test",
+    "password": "password123",
+    "email": "pintest@example.com",
+    "citizenId": "7777777777777",
+    "thaiName": "ทดสอบ พิน",
+    "englishName": "Test Pin",
+    "pin": "123",
+    "role": "PERSON"
+  }'
+```
+
+**Expected Response:** HTTP 400 Bad Request
+
+```json
+{
+  "code": "400",
+  "message": "PIN must be exactly 6 digits",
+  "timestamp": "2025-11-22T10:44:00Z"
+}
+```
+
+### Test Case 1.7: Register TELLER User ✅
 
 **Explanation:** Register a teller who can perform deposits and create accounts.
 
@@ -117,6 +219,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "teller_alice",
     "password": "tellerPass123",
     "email": "alice.teller@bank.com",
+    "citizenId": "1111111111111",
+    "thaiName": "อลิซ เทลเลอร์",
+    "englishName": "Alice Teller",
+    "pin": "999999",
     "role": "TELLER"
   }'
 ```
@@ -129,11 +235,14 @@ curl -X POST http://localhost:8080/api/register \
     "id": 2,
     "username": "teller_alice",
     "email": "alice.teller@bank.com",
+    "citizenId": "1111111******",
+    "thaiName": "อลิซ เทลเลอร์",
+    "englishName": "Alice Teller",
     "role": "TELLER",
     "registeredAt": "2025-11-22T10:45:00"
   },
-  "defaultAccountId": 7654321,
-  "message": "User registered successfully with default account"
+  "defaultAccountId": null,
+  "message": "User registered successfully"
 }
 ```
 
@@ -225,42 +334,62 @@ curl -X GET http://localhost:8080/api/auth/validate \
 
 ### Description
 
-Any user can create new accounts. The system automatically creates a default SAVINGS account during user registration.
+Tellers can create new accounts for users. Accounts are not automatically created during registration.
 
-### Test Case 3.1: User Gets Their Default Account ✅
+### Test Case 3.1: Teller Creates Account for User ✅
 
-**Explanation:** After registration, a user already has a default SAVINGS account created automatically.
+**Explanation:** A teller creates a new SAVINGS account for a registered user.
 
-**Step 1:** Register a new user
-
-```bash
-curl -X POST http://localhost:8080/api/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "alice_customer",
-    "password": "alicePass123",
-    "email": "alice@example.com",
-    "role": "PERSON"
-  }'
-```
-
-Save the response - it includes `defaultAccountId`.
-
-**Step 2:** User logs in (save token as $TOKEN)
+**Step 1:** Teller logs in
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "alice_customer",
-    "password": "alicePass123"
+    "username": "teller_alice",
+    "password": "tellerPass123"
   }'
 ```
 
-**Step 3:** Get user's default account
+**Step 2:** Teller creates account for user
 
 ```bash
-curl -X GET http://localhost:8080/api/accounts/user/3 \
+curl -X POST http://localhost:8080/api/accounts/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TELLER_TOKEN" \
+  -d '{
+    "userId": 1,
+    "accountType": "SAVINGS",
+    "initialBalance": 0
+  }'
+```
+
+**Expected Response:** HTTP 201 Created
+
+```json
+{
+  "id": "8152356",
+  "userId": 1,
+  "accountType": "SAVINGS",
+  "balance": 0.0,
+  "status": "ACTIVE",
+  "createdAt": "2025-11-22T10:40:00"
+}
+```
+
+**Step 3:** User logs in and views their account
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "password": "securePass123"
+  }'
+```
+
+```bash
+curl -X GET http://localhost:8080/api/accounts/user/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -270,8 +399,8 @@ curl -X GET http://localhost:8080/api/accounts/user/3 \
 [
   {
     "id": "8152356",
-    "userId": 3,
-    "balance": 1000.0,
+    "userId": 1,
+    "balance": 0.0,
     "accountType": "SAVINGS",
     "createdAt": "2025-11-22T13:16:42.142169"
   }
@@ -761,6 +890,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "alice_customer",
     "password": "alicePass123",
     "email": "alice@example.com",
+    "citizenId": "3101234567890",
+    "thaiName": "อลิซ คัสโตเมอร์",
+    "englishName": "Alice Customer",
+    "pin": "111111",
     "role": "PERSON"
   }'
 ```
@@ -774,6 +907,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "bob_customer",
     "password": "bobPass123",
     "email": "bob@example.com",
+    "citizenId": "3109876543210",
+    "thaiName": "บ็อบ คัสโตเมอร์",
+    "englishName": "Bob Customer",
+    "pin": "222222",
     "role": "PERSON"
   }'
 ```
@@ -787,6 +924,10 @@ curl -X POST http://localhost:8080/api/register \
     "username": "teller_carol",
     "password": "carolPass123",
     "email": "carol@bank.com",
+    "citizenId": "3105555555555",
+    "thaiName": "แครอล เทลเลอร์",
+    "englishName": "Carol Teller",
+    "pin": "999999",
     "role": "TELLER"
   }'
 ```
@@ -804,6 +945,8 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ### Step 4: Teller Creates Accounts for Both Users
 
+**Note:** Users must have accounts created by a teller before they can perform banking operations.
+
 **Create account for Alice:**
 
 ```bash
@@ -817,6 +960,8 @@ curl -X POST http://localhost:8080/api/accounts/create \
   }'
 ```
 
+Save the account ID from the response (e.g., "ALICE_ACCOUNT_ID").
+
 **Create account for Bob:**
 
 ```bash
@@ -829,6 +974,8 @@ curl -X POST http://localhost:8080/api/accounts/create \
     "initialBalance": 0
   }'
 ```
+
+Save the account ID from the response (e.g., "BOB_ACCOUNT_ID").
 
 ### Step 5: Teller Deposits Money to Alice's Account
 
@@ -985,6 +1132,18 @@ curl -X POST http://localhost:8080/api/auth/login \
 4. **Transaction Ordering:** Bank statements show transactions from past to present (chronologically)
 5. **Minimum Deposit:** Deposits must be at least 1 THB
 6. **API Gateway:** All requests go through the API gateway at port 8080 with `/api` prefix
+7. **Account Creation:** Accounts are NOT automatically created during registration. A teller must create accounts for users.
+8. **Registration Requirements:** All users must provide:
+   - Email (valid format)
+   - Password (minimum 6 characters)
+   - Citizen ID (exactly 13 digits, Thai national ID)
+   - Thai Name (full name in Thai)
+   - English Name (full name in English)
+   - PIN (exactly 6 digits, used for transactions)
+9. **Security:** 
+   - Passwords and PINs are hashed using BCrypt
+   - Citizen ID is masked in responses (shows only first 7 digits + "******")
+   - PIN is never returned in API responses
 
 ## Tips for Testing
 

@@ -36,14 +36,35 @@ public class RegisterService {
             throw new UserAlreadyExistsException("Email '" + request.getEmail() + "' is already registered");
         }
         
-        // Hash password with BCrypt
+        // Validate unique citizen ID
+        if (userRepository.existsByCitizenId(request.getCitizenId())) {
+            log.warn("Citizen ID already exists: {}", request.getCitizenId());
+            throw new UserAlreadyExistsException("Citizen ID '" + request.getCitizenId() + "' is already registered");
+        }
+        
+        // Validate citizen ID format (13 digits)
+        if (!request.getCitizenId().matches("\\d{13}")) {
+            throw new IllegalArgumentException("Citizen ID must be exactly 13 digits");
+        }
+        
+        // Validate PIN format (6 digits)
+        if (!request.getPin().matches("\\d{6}")) {
+            throw new IllegalArgumentException("PIN must be exactly 6 digits");
+        }
+        
+        // Hash password and PIN with BCrypt
         String hashedPassword = passwordEncoder.encode(request.getPassword());
+        String hashedPin = passwordEncoder.encode(request.getPin());
         
         // Create user
         User user = User.builder()
                 .username(request.getUsername())
                 .password(hashedPassword)
                 .email(request.getEmail())
+                .citizenId(request.getCitizenId())
+                .thaiName(request.getThaiName())
+                .englishName(request.getEnglishName())
+                .pin(hashedPin)
                 .role(request.getRole())
                 .build();
         
@@ -56,6 +77,9 @@ public class RegisterService {
                 .username(savedUser.getUsername())
                 .password(savedUser.getPassword())
                 .email(savedUser.getEmail())
+                .citizenId(maskCitizenId(savedUser.getCitizenId()))
+                .thaiName(savedUser.getThaiName())
+                .englishName(savedUser.getEnglishName())
                 .role(savedUser.getRole())
                 .registeredAt(savedUser.getRegisteredAt())
                 .build();
@@ -65,6 +89,13 @@ public class RegisterService {
                 .defaultAccountId(null)
                 .message("User registered successfully")
                 .build();
+    }
+    
+    private String maskCitizenId(String citizenId) {
+        if (citizenId == null || citizenId.length() != 13) {
+            return citizenId;
+        }
+        return citizenId.substring(0, 7) + "******";
     }
     
     public UserDto getUserByUsername(String username) {
@@ -78,6 +109,9 @@ public class RegisterService {
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .email(user.getEmail())
+                .citizenId(maskCitizenId(user.getCitizenId()))
+                .thaiName(user.getThaiName())
+                .englishName(user.getEnglishName())
                 .role(user.getRole())
                 .registeredAt(user.getRegisteredAt())
                 .build();
@@ -94,6 +128,9 @@ public class RegisterService {
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .email(user.getEmail())
+                .citizenId(maskCitizenId(user.getCitizenId()))
+                .thaiName(user.getThaiName())
+                .englishName(user.getEnglishName())
                 .role(user.getRole())
                 .registeredAt(user.getRegisteredAt())
                 .build();

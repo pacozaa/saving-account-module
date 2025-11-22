@@ -25,6 +25,15 @@ public class UserDto {
     @Schema(description = "Email address", example = "john.doe@example.com")
     private String email;
     
+    @Schema(description = "Citizen ID (masked for security)", example = "1234567******")
+    private String citizenId;
+    
+    @Schema(description = "Full name in Thai", example = "สมชาย ใจดี")
+    private String thaiName;
+    
+    @Schema(description = "Full name in English", example = "Somchai Jaidee")
+    private String englishName;
+    
     @Schema(description = "User role", example = "PERSON")
     private UserRole role;
     

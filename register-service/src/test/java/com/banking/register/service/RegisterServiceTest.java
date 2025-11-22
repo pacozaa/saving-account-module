@@ -46,6 +46,10 @@ class RegisterServiceTest {
                 .username("john_doe")
                 .password("password123")
                 .email("john.doe@example.com")
+                .citizenId("1234567890123")
+                .thaiName("สมชาย ใจดี")
+                .englishName("Somchai Jaidee")
+                .pin("123456")
                 .role(UserRole.PERSON)
                 .build();
         
@@ -54,6 +58,10 @@ class RegisterServiceTest {
                 .username("john_doe")
                 .password("$2a$10$hashedPassword")
                 .email("john.doe@example.com")
+                .citizenId("1234567890123")
+                .thaiName("สมชาย ใจดี")
+                .englishName("Somchai Jaidee")
+                .pin("$2a$10$hashedPin")
                 .role(UserRole.PERSON)
                 .registeredAt(LocalDateTime.now())
                 .build();
@@ -65,7 +73,9 @@ class RegisterServiceTest {
         // Given
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
+        when(userRepository.existsByCitizenId(anyString())).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("$2a$10$hashedPassword");
+        when(passwordEncoder.encode("123456")).thenReturn("$2a$10$hashedPin");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         
         // When
@@ -76,12 +86,16 @@ class RegisterServiceTest {
         assertThat(response.getUser()).isNotNull();
         assertThat(response.getUser().getUsername()).isEqualTo("john_doe");
         assertThat(response.getUser().getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(response.getUser().getCitizenId()).isEqualTo("1234567******"); // Masked
+        assertThat(response.getUser().getThaiName()).isEqualTo("สมชาย ใจดี");
+        assertThat(response.getUser().getEnglishName()).isEqualTo("Somchai Jaidee");
         assertThat(response.getUser().getPassword()).isEqualTo("$2a$10$hashedPassword");
         assertThat(response.getDefaultAccountId()).isNull();
         assertThat(response.getMessage()).contains("registered successfully");
         
-        // Verify password was hashed
+        // Verify password and PIN were hashed
         verify(passwordEncoder).encode("password123");
+        verify(passwordEncoder).encode("123456");
         
         // Verify user was saved
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -89,6 +103,8 @@ class RegisterServiceTest {
         User capturedUser = userCaptor.getValue();
         assertThat(capturedUser.getUsername()).isEqualTo("john_doe");
         assertThat(capturedUser.getPassword()).isEqualTo("$2a$10$hashedPassword");
+        assertThat(capturedUser.getPin()).isEqualTo("$2a$10$hashedPin");
+        assertThat(capturedUser.getCitizenId()).isEqualTo("1234567890123");
     }
     
     @Test
@@ -128,6 +144,7 @@ class RegisterServiceTest {
         // Given
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByCitizenId(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         
@@ -160,6 +177,7 @@ class RegisterServiceTest {
         // Given
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByCitizenId(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         
@@ -170,7 +188,63 @@ class RegisterServiceTest {
         assertThat(response.getUser().getId()).isEqualTo(1L);
         assertThat(response.getUser().getUsername()).isEqualTo("john_doe");
         assertThat(response.getUser().getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(response.getUser().getCitizenId()).isEqualTo("1234567******"); // Masked
+        assertThat(response.getUser().getThaiName()).isEqualTo("สมชาย ใจดี");
+        assertThat(response.getUser().getEnglishName()).isEqualTo("Somchai Jaidee");
         assertThat(response.getUser().getRole()).isEqualTo(UserRole.PERSON);
         assertThat(response.getUser().getRegisteredAt()).isNotNull();
+    }
+    
+    @Test
+    @DisplayName("Should throw exception when citizen ID already exists")
+    void testRegisterUser_DuplicateCitizenId_ThrowsException() {
+        // Given
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByCitizenId("1234567890123")).thenReturn(true);
+        
+        // When & Then
+        assertThatThrownBy(() -> registerService.registerUser(registerRequest))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessageContaining("Citizen ID '1234567890123' is already registered");
+        
+        // Verify no user was saved
+        verify(userRepository, never()).save(any(User.class));
+    }
+    
+    @Test
+    @DisplayName("Should throw exception when citizen ID format is invalid")
+    void testRegisterUser_InvalidCitizenIdFormat_ThrowsException() {
+        // Given
+        registerRequest.setCitizenId("12345"); // Invalid: not 13 digits
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByCitizenId(anyString())).thenReturn(false);
+        
+        // When & Then
+        assertThatThrownBy(() -> registerService.registerUser(registerRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Citizen ID must be exactly 13 digits");
+        
+        // Verify no user was saved
+        verify(userRepository, never()).save(any(User.class));
+    }
+    
+    @Test
+    @DisplayName("Should throw exception when PIN format is invalid")
+    void testRegisterUser_InvalidPinFormat_ThrowsException() {
+        // Given
+        registerRequest.setPin("123"); // Invalid: not 6 digits
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByCitizenId(anyString())).thenReturn(false);
+        
+        // When & Then
+        assertThatThrownBy(() -> registerService.registerUser(registerRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PIN must be exactly 6 digits");
+        
+        // Verify no user was saved
+        verify(userRepository, never()).save(any(User.class));
     }
 }

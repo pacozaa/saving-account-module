@@ -33,6 +33,26 @@ public class RegisterRequest {
     @Schema(description = "User email address", example = "john.doe@example.com")
     private String email;
     
+    @NotBlank(message = "Citizen ID is required")
+    @Size(min = 13, max = 13, message = "Citizen ID must be exactly 13 digits")
+    @Schema(description = "Thai national ID (13 digits)", example = "1234567890123")
+    private String citizenId;
+    
+    @NotBlank(message = "Thai name is required")
+    @Size(max = 100, message = "Thai name must not exceed 100 characters")
+    @Schema(description = "Full name in Thai", example = "สมชาย ใจดี")
+    private String thaiName;
+    
+    @NotBlank(message = "English name is required")
+    @Size(max = 100, message = "English name must not exceed 100 characters")
+    @Schema(description = "Full name in English", example = "Somchai Jaidee")
+    private String englishName;
+    
+    @NotBlank(message = "PIN is required")
+    @Size(min = 6, max = 6, message = "PIN must be exactly 6 digits")
+    @Schema(description = "6-digit PIN for transactions", example = "123456")
+    private String pin;
+    
     @NotNull(message = "Role is required")
     @Schema(description = "User role", example = "PERSON", allowableValues = {"PERSON", "CUSTOMER", "TELLER"})
     private UserRole role;
