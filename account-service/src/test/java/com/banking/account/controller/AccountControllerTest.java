@@ -283,91 +283,43 @@ class AccountControllerTest {
     }
     
     @Test
-    void testGetAccount_WithTellerRole_Returns403() throws Exception {
-        // Given - TELLER tries to access an account
+    void testGetAccount_WithTellerRole_Returns200() throws Exception {
+        // Given - TELLER can also access account information
         String accountId = "1234567";
         Long authenticatedUserId = 1L;
+        when(accountService.getAccount(accountId, authenticatedUserId)).thenReturn(testAccountDto);
         
         // When & Then
         mockMvc.perform(get("/accounts/{id}", accountId)
                 .header("X-User-Id", authenticatedUserId)
                 .header("X-User-Role", "TELLER"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(accountId));
     }
     
     @Test
-    void testGetAccount_WithNonCustomerRole_Returns403() throws Exception {
-        // Given - Non-CUSTOMER role tries to access an account
-        String accountId = "1234567";
-        Long authenticatedUserId = 1L;
-        
-        // When & Then
-        mockMvc.perform(get("/accounts/{id}", accountId)
-                .header("X-User-Id", authenticatedUserId)
-                .header("X-User-Role", "TELLER"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
-    }
-    
-    @Test
-    void testGetAccount_WithoutRole_Returns403() throws Exception {
-        // Given - No role header
-        String accountId = "1234567";
-        Long authenticatedUserId = 1L;
-        
-        // When & Then
-        mockMvc.perform(get("/accounts/{id}", accountId)
-                .header("X-User-Id", authenticatedUserId))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
-    }
-    
-    @Test
-    void testGetAccountsByUserId_WithTellerRole_Returns403() throws Exception {
-        // Given - TELLER tries to access accounts
+    void testGetAccountsByUserId_WithTellerRole_Returns200() throws Exception {
+        // Given - TELLER can also access account information
         Long userId = 1L;
         Long authenticatedUserId = 1L;
+        
+        AccountDto account1 = AccountDto.builder()
+            .id("1234567")
+            .userId(userId)
+            .balance(new BigDecimal("1000.00"))
+            .accountType("SAVINGS")
+            .createdAt(LocalDateTime.now())
+            .build();
+        
+        List<AccountDto> accounts = Arrays.asList(account1);
+        when(accountService.getAccountsByUserId(userId, authenticatedUserId)).thenReturn(accounts);
         
         // When & Then
         mockMvc.perform(get("/accounts/user/{userId}", userId)
                 .header("X-User-Id", authenticatedUserId)
                 .header("X-User-Role", "TELLER"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
-    }
-    
-    @Test
-    void testGetAccountsByUserId_WithNonCustomerRole_Returns403() throws Exception {
-        // Given - Non-CUSTOMER role tries to access accounts
-        Long userId = 1L;
-        Long authenticatedUserId = 1L;
-        
-        // When & Then
-        mockMvc.perform(get("/accounts/user/{userId}", userId)
-                .header("X-User-Id", authenticatedUserId)
-                .header("X-User-Role", "TELLER"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
-    }
-    
-    @Test
-    void testGetAccountsByUserId_WithoutRole_Returns403() throws Exception {
-        // Given - No role header
-        Long userId = 1L;
-        Long authenticatedUserId = 1L;
-        
-        // When & Then
-        mockMvc.perform(get("/accounts/user/{userId}", userId)
-                .header("X-User-Id", authenticatedUserId))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
-                .andExpect(jsonPath("$.message").value("Only customers are authorized to view account information"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
     }
     
     @Test

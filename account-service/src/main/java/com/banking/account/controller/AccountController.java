@@ -56,13 +56,6 @@ public class AccountController {
             @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         log.info("GET /api/accounts/{} - authenticatedUserId: {}, userRole: {}", id, authenticatedUserId, userRole);
         
-        // Only CUSTOMER can access account information
-        if (!"CUSTOMER".equals(userRole)) {
-            log.warn("Unauthorized account access attempt by role: {}", userRole);
-            throw new com.banking.account.exception.UnauthorizedAccessException(
-                "Only customers are authorized to view account information");
-        }
-        
         AccountDto account = accountService.getAccount(id, authenticatedUserId);
         return ResponseEntity.ok(account);
     }
@@ -97,13 +90,6 @@ public class AccountController {
             @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
             @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         log.info("GET /api/accounts/user/{} - authenticatedUserId: {}, userRole: {}", userId, authenticatedUserId, userRole);
-        
-        // Only CUSTOMER can access account information
-        if (!"CUSTOMER".equals(userRole)) {
-            log.warn("Unauthorized account access attempt by role: {}", userRole);
-            throw new com.banking.account.exception.UnauthorizedAccessException(
-                "Only customers are authorized to view account information");
-        }
         
         List<AccountDto> accounts = accountService.getAccountsByUserId(userId, authenticatedUserId);
         return ResponseEntity.ok(accounts);
