@@ -31,6 +31,9 @@ class TransactionServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private com.banking.transaction.client.AccountServiceClient accountServiceClient;
+
     @InjectMocks
     private TransactionService transactionService;
 
@@ -121,6 +124,14 @@ class TransactionServiceTest {
     void testGetTransactionsByAccountId_ReturnsTransactions() {
         // Given
         Long accountId = 101L;
+        Long userId = 1L;
+        String role = "PERSON";
+        
+        // Mock account service to return account owned by user
+        com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
+        accountDto.setId("101");
+        accountDto.setUserId(userId);
+        when(accountServiceClient.getAccountById(String.valueOf(accountId))).thenReturn(accountDto);
         
         Transaction tx1 = Transaction.builder()
                 .id(1001L)
@@ -153,7 +164,7 @@ class TransactionServiceTest {
         when(transactionRepository.findByAccountIdOrderByTimestampDesc(accountId)).thenReturn(transactions);
 
         // When
-        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId);
+        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, userId, role);
 
         // Then
         assertThat(result).isNotNull();
@@ -165,6 +176,7 @@ class TransactionServiceTest {
         assertThat(result.get(2).getId()).isEqualTo(1001L);
         assertThat(result.get(2).getType()).isEqualTo("DEPOSIT");
 
+        verify(accountServiceClient, times(1)).getAccountById(String.valueOf(accountId));
         verify(transactionRepository, times(1)).findByAccountIdOrderByTimestampDesc(accountId);
     }
 
@@ -173,15 +185,24 @@ class TransactionServiceTest {
     void testGetTransactionsByAccountId_EmptyList() {
         // Given
         Long accountId = 999L;
+        Long userId = 1L;
+        String role = "PERSON";
+        
+        // Mock account service to return account owned by user
+        com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
+        accountDto.setId("999");
+        accountDto.setUserId(userId);
+        when(accountServiceClient.getAccountById(String.valueOf(accountId))).thenReturn(accountDto);
         when(transactionRepository.findByAccountIdOrderByTimestampDesc(accountId)).thenReturn(Arrays.asList());
 
         // When
-        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId);
+        List<TransactionDto> result = transactionService.getTransactionsByAccountId(accountId, userId, role);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
 
+        verify(accountServiceClient, times(1)).getAccountById(String.valueOf(accountId));
         verify(transactionRepository, times(1)).findByAccountIdOrderByTimestampDesc(accountId);
     }
 
@@ -190,10 +211,18 @@ class TransactionServiceTest {
     void testGetTransactionById_Success() {
         // Given
         Long transactionId = 1001L;
+        Long userId = 1L;
+        String role = "PERSON";
+        
+        // Mock account service to return account owned by user
+        com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
+        accountDto.setId("101");
+        accountDto.setUserId(userId);
+        when(accountServiceClient.getAccountById("101")).thenReturn(accountDto);
         when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(transaction));
 
         // When
-        TransactionDto result = transactionService.getTransactionById(transactionId);
+        TransactionDto result = transactionService.getTransactionById(transactionId, userId, role);
 
         // Then
         assertThat(result).isNotNull();
@@ -203,6 +232,7 @@ class TransactionServiceTest {
         assertThat(result.getAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
         assertThat(result.getStatus()).isEqualTo("COMPLETED");
 
+        verify(accountServiceClient, times(1)).getAccountById("101");
         verify(transactionRepository, times(1)).findById(transactionId);
     }
 
@@ -211,10 +241,12 @@ class TransactionServiceTest {
     void testGetTransactionById_NotFound_ThrowsException() {
         // Given
         Long transactionId = 9999L;
+        Long userId = 1L;
+        String role = "PERSON";
         when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> transactionService.getTransactionById(transactionId))
+        assertThatThrownBy(() -> transactionService.getTransactionById(transactionId, userId, role))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessageContaining("Transaction not found with ID: " + transactionId);
 
@@ -225,6 +257,8 @@ class TransactionServiceTest {
     @DisplayName("Should map Transaction entity to TransactionDto correctly")
     void testMapToDto_Mapping() {
         // Given
+        Long userId = 1L;
+        String role = "PERSON";
         Transaction txWithRelated = Transaction.builder()
                 .id(1005L)
                 .accountId(101L)
@@ -235,10 +269,15 @@ class TransactionServiceTest {
                 .timestamp(now)
                 .build();
 
+        // Mock account service to return account owned by user
+        com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
+        accountDto.setId("101");
+        accountDto.setUserId(userId);
+        when(accountServiceClient.getAccountById("101")).thenReturn(accountDto);
         when(transactionRepository.findById(1005L)).thenReturn(Optional.of(txWithRelated));
 
         // When
-        TransactionDto result = transactionService.getTransactionById(1005L);
+        TransactionDto result = transactionService.getTransactionById(1005L, userId, role);
 
         // Then
         assertThat(result.getId()).isEqualTo(1005L);

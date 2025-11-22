@@ -46,14 +46,16 @@ public class AccountController {
     @Operation(summary = "Get account by ID", description = "Retrieves account details by account ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Account found"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - not account owner"),
         @ApiResponse(responseCode = "404", description = "Account not found")
     })
     public ResponseEntity<AccountDto> getAccount(
             @Parameter(description = "Account ID (7-digit account number)", example = "1234567")
-            @PathVariable String id) {
-        log.info("GET /api/accounts/{}", id);
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId) {
+        log.info("GET /api/accounts/{} - authenticatedUserId: {}", id, authenticatedUserId);
         
-        AccountDto account = accountService.getAccount(id);
+        AccountDto account = accountService.getAccount(id, authenticatedUserId);
         return ResponseEntity.ok(account);
     }
     
@@ -78,14 +80,16 @@ public class AccountController {
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get accounts by user ID", description = "Retrieves all accounts for a specific user")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Accounts retrieved successfully")
+        @ApiResponse(responseCode = "200", description = "Accounts retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - cannot access other users' accounts")
     })
     public ResponseEntity<List<AccountDto>> getAccountsByUserId(
             @Parameter(description = "User ID", example = "1")
-            @PathVariable Long userId) {
-        log.info("GET /api/accounts/user/{}", userId);
+            @PathVariable Long userId,
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId) {
+        log.info("GET /api/accounts/user/{} - authenticatedUserId: {}", userId, authenticatedUserId);
         
-        List<AccountDto> accounts = accountService.getAccountsByUserId(userId);
+        List<AccountDto> accounts = accountService.getAccountsByUserId(userId, authenticatedUserId);
         return ResponseEntity.ok(accounts);
     }
     

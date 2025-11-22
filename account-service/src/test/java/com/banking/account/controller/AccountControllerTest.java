@@ -110,10 +110,12 @@ class AccountControllerTest {
     void testGetAccount_ValidId_Returns200() throws Exception {
         // Given
         String accountId = "1234567";
-        when(accountService.getAccount(accountId)).thenReturn(testAccountDto);
+        Long authenticatedUserId = 1L;
+        when(accountService.getAccount(accountId, authenticatedUserId)).thenReturn(testAccountDto);
         
         // When & Then
-        mockMvc.perform(get("/accounts/{id}", accountId))
+        mockMvc.perform(get("/accounts/{id}", accountId)
+                .header("X-User-Id", authenticatedUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(accountId))
                 .andExpect(jsonPath("$.userId").value(1))
@@ -125,11 +127,13 @@ class AccountControllerTest {
     void testGetAccount_NotFound_Returns404() throws Exception {
         // Given
         String accountId = "9999999";
-        when(accountService.getAccount(accountId))
+        Long authenticatedUserId = 1L;
+        when(accountService.getAccount(accountId, authenticatedUserId))
             .thenThrow(new AccountNotFoundException("Account not found with id: " + accountId));
         
         // When & Then
-        mockMvc.perform(get("/accounts/{id}", accountId))
+        mockMvc.perform(get("/accounts/{id}", accountId)
+                .header("X-User-Id", authenticatedUserId))
                 .andExpect(status().isNotFound());
     }
     
@@ -192,6 +196,7 @@ class AccountControllerTest {
     void testGetAccountsByUserId_Returns200() throws Exception {
         // Given
         Long userId = 1L;
+        Long authenticatedUserId = 1L;
         
         AccountDto account1 = AccountDto.builder()
             .id("1234567")
@@ -211,10 +216,11 @@ class AccountControllerTest {
         
         List<AccountDto> accounts = Arrays.asList(account1, account2);
         
-        when(accountService.getAccountsByUserId(userId)).thenReturn(accounts);
+        when(accountService.getAccountsByUserId(userId, authenticatedUserId)).thenReturn(accounts);
         
         // When & Then
-        mockMvc.perform(get("/accounts/user/{userId}", userId))
+        mockMvc.perform(get("/accounts/user/{userId}", userId)
+                .header("X-User-Id", authenticatedUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value("1234567"))
@@ -227,13 +233,47 @@ class AccountControllerTest {
     void testGetAccountsByUserId_EmptyList_Returns200() throws Exception {
         // Given
         Long userId = 999L;
+        Long authenticatedUserId = 999L;
         
-        when(accountService.getAccountsByUserId(userId)).thenReturn(Arrays.asList());
+        when(accountService.getAccountsByUserId(userId, authenticatedUserId)).thenReturn(Arrays.asList());
         
         // When & Then
-        mockMvc.perform(get("/accounts/user/{userId}", userId))
+        mockMvc.perform(get("/accounts/user/{userId}", userId)
+                .header("X-User-Id", authenticatedUserId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+    
+    @Test
+    void testGetAccount_UnauthorizedAccess_Returns403() throws Exception {
+        // Given - User 2 tries to access User 1's account
+        String accountId = "1234567";
+        Long authenticatedUserId = 2L;
+        
+        when(accountService.getAccount(accountId, authenticatedUserId))
+            .thenThrow(new com.banking.account.exception.UnauthorizedAccessException(
+                "You are not authorized to access this account"));
+        
+        // When & Then
+        mockMvc.perform(get("/accounts/{id}", accountId)
+                .header("X-User-Id", authenticatedUserId))
+                .andExpect(status().isForbidden());
+    }
+    
+    @Test
+    void testGetAccountsByUserId_UnauthorizedAccess_Returns403() throws Exception {
+        // Given - User 2 tries to access User 1's accounts
+        Long userId = 1L;
+        Long authenticatedUserId = 2L;
+        
+        when(accountService.getAccountsByUserId(userId, authenticatedUserId))
+            .thenThrow(new com.banking.account.exception.UnauthorizedAccessException(
+                "You are not authorized to access accounts of other users"));
+        
+        // When & Then
+        mockMvc.perform(get("/accounts/user/{userId}", userId)
+                .header("X-User-Id", authenticatedUserId))
+                .andExpect(status().isForbidden());
     }
     
     @Test

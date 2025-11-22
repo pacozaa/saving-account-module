@@ -135,18 +135,22 @@ class TransactionControllerTest {
     void testGetTransaction_ValidId_Returns200() throws Exception {
         // Given
         Long transactionId = 1001L;
-        when(transactionService.getTransactionById(transactionId)).thenReturn(transactionDto);
+        Long userId = 1L;
+        String role = "PERSON";
+        when(transactionService.getTransactionById(eq(transactionId), eq(userId), eq(role))).thenReturn(transactionDto);
 
         // When & Then
         mockMvc.perform(get("/transactions/{transactionId}", transactionId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", userId)
+                        .header("X-User-Role", role))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1001L))
                 .andExpect(jsonPath("$.accountId").value(101L))
                 .andExpect(jsonPath("$.type").value("DEPOSIT"))
                 .andExpect(jsonPath("$.amount").value(500.00));
 
-        verify(transactionService, times(1)).getTransactionById(transactionId);
+        verify(transactionService, times(1)).getTransactionById(eq(transactionId), eq(userId), eq(role));
     }
 
     @Test
@@ -154,15 +158,19 @@ class TransactionControllerTest {
     void testGetTransaction_NotFound_Returns404() throws Exception {
         // Given
         Long transactionId = 9999L;
-        when(transactionService.getTransactionById(transactionId))
+        Long userId = 1L;
+        String role = "PERSON";
+        when(transactionService.getTransactionById(eq(transactionId), eq(userId), eq(role)))
                 .thenThrow(new TransactionNotFoundException("Transaction not found with ID: " + transactionId));
 
         // When & Then
         mockMvc.perform(get("/transactions/{transactionId}", transactionId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", userId)
+                        .header("X-User-Role", role))
                 .andExpect(status().isNotFound());
 
-        verify(transactionService, times(1)).getTransactionById(transactionId);
+        verify(transactionService, times(1)).getTransactionById(eq(transactionId), eq(userId), eq(role));
     }
 
     @Test
@@ -170,6 +178,8 @@ class TransactionControllerTest {
     void testGetTransactionsByAccount_Returns200() throws Exception {
         // Given
         Long accountId = 101L;
+        Long userId = 1L;
+        String role = "PERSON";
         
         TransactionDto tx1 = new TransactionDto();
         tx1.setId(1001L);
@@ -188,11 +198,13 @@ class TransactionControllerTest {
         tx2.setStatus("COMPLETED");
 
         List<TransactionDto> transactions = Arrays.asList(tx1, tx2);
-        when(transactionService.getTransactionsByAccountId(accountId)).thenReturn(transactions);
+        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(userId), eq(role))).thenReturn(transactions);
 
         // When & Then
         mockMvc.perform(get("/transactions/account/{accountId}", accountId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", userId)
+                        .header("X-User-Role", role))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value(1001L))
@@ -200,7 +212,7 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$[1].id").value(1002L))
                 .andExpect(jsonPath("$[1].type").value("WITHDRAWAL"));
 
-        verify(transactionService, times(1)).getTransactionsByAccountId(accountId);
+        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(userId), eq(role));
     }
 
     @Test
@@ -208,15 +220,19 @@ class TransactionControllerTest {
     void testGetTransactionsByAccount_EmptyList_Returns200() throws Exception {
         // Given
         Long accountId = 999L;
-        when(transactionService.getTransactionsByAccountId(accountId)).thenReturn(Arrays.asList());
+        Long userId = 1L;
+        String role = "PERSON";
+        when(transactionService.getTransactionsByAccountId(eq(accountId), eq(userId), eq(role))).thenReturn(Arrays.asList());
 
         // When & Then
         mockMvc.perform(get("/transactions/account/{accountId}", accountId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", userId)
+                        .header("X-User-Role", role))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
 
-        verify(transactionService, times(1)).getTransactionsByAccountId(accountId);
+        verify(transactionService, times(1)).getTransactionsByAccountId(eq(accountId), eq(userId), eq(role));
     }
 
     @Test

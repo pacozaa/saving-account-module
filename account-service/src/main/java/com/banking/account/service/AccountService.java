@@ -50,6 +50,24 @@ public class AccountService {
         return mapToDto(account);
     }
     
+    @Transactional(readOnly = true)
+    public AccountDto getAccount(String accountId, Long authenticatedUserId) {
+        log.info("Fetching account with id: {} for user: {}", accountId, authenticatedUserId);
+        
+        Account account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + accountId));
+        
+        // Check if the authenticated user owns the account
+        if (authenticatedUserId != null && !account.getUserId().equals(authenticatedUserId)) {
+            log.warn("User {} attempted to access account {} owned by user {}", 
+                    authenticatedUserId, accountId, account.getUserId());
+            throw new com.banking.account.exception.UnauthorizedAccessException(
+                "You are not authorized to access this account");
+        }
+        
+        return mapToDto(account);
+    }
+    
     @Transactional
     public AccountDto updateBalance(String accountId, BigDecimal amount) {
         log.info("Updating balance for account: {} by amount: {}", accountId, amount);
@@ -74,6 +92,24 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<AccountDto> getAccountsByUserId(Long userId) {
         log.info("Fetching accounts for userId: {}", userId);
+        
+        List<Account> accounts = accountRepository.findByUserId(userId);
+        
+        return accounts.stream()
+            .map(this::mapToDto)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional(readOnly = true)
+    public List<AccountDto> getAccountsByUserId(Long userId, Long authenticatedUserId) {
+        log.info("Fetching accounts for userId: {} by authenticatedUser: {}", userId, authenticatedUserId);
+        
+        // Check if the authenticated user is requesting their own accounts
+        if (authenticatedUserId != null && !userId.equals(authenticatedUserId)) {
+            log.warn("User {} attempted to access accounts of user {}", authenticatedUserId, userId);
+            throw new com.banking.account.exception.UnauthorizedAccessException(
+                "You are not authorized to access accounts of other users");
+        }
         
         List<Account> accounts = accountRepository.findByUserId(userId);
         

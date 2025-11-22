@@ -33,6 +33,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
     
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedAccessException(
+            UnauthorizedAccessException ex, HttpServletRequest request) {
+        
+        log.error("Unauthorized access: {}", ex.getMessage());
+        
+        ErrorResponse error = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.FORBIDDEN.value(),
+            HttpStatus.FORBIDDEN.getReasonPhrase(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+    
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {

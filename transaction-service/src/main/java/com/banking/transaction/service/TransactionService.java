@@ -1,5 +1,7 @@
 package com.banking.transaction.service;
 
+import com.banking.transaction.client.AccountServiceClient;
+import com.banking.transaction.dto.AccountDto;
 import com.banking.transaction.dto.LogTransactionRequest;
 import com.banking.transaction.dto.TransactionDto;
 import com.banking.transaction.entity.Transaction;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final AccountServiceClient accountServiceClient;
 
     @Transactional
     public TransactionDto logTransaction(LogTransactionRequest request) {
@@ -40,8 +45,14 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<TransactionDto> getTransactionsByAccountId(Long accountId) {
-        log.info("Fetching transactions for account: {}", accountId);
+    public List<TransactionDto> getTransactionsByAccountId(Long accountId, Long authenticatedUserId, String userRole) {
+        log.info("Fetching transactions for account: {} by user: {} with role: {}", accountId, authenticatedUserId, userRole);
+        
+        // Only PERSON (customers) need ownership validation
+        // TELLERs can view any transaction
+        if ("PERSON".equals(userRole)) {
+            validateAccountOwnership(accountId, authenticatedUserId);
+        }
         
         List<Transaction> transactions = transactionRepository
                 .findByAccountIdOrderByTimestampDesc(accountId);
@@ -54,13 +65,41 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public TransactionDto getTransactionById(Long transactionId) {
-        log.info("Fetching transaction with ID: {}", transactionId);
+    public TransactionDto getTransactionById(Long transactionId, Long authenticatedUserId, String userRole) {
+        log.info("Fetching transaction with ID: {} by user: {} with role: {}", transactionId, authenticatedUserId, userRole);
         
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new TransactionNotFoundException("Transaction not found with ID: " + transactionId));
         
+        // Only PERSON (customers) need ownership validation
+        if ("PERSON".equals(userRole)) {
+            validateAccountOwnership(transaction.getAccountId(), authenticatedUserId);
+        }
+        
         return mapToDto(transaction);
+    }
+
+    private void validateAccountOwnership(Long accountId, Long authenticatedUserId) {
+        try {
+            AccountDto account = accountServiceClient.getAccountById(accountId.toString());
+            
+            if (!account.getUserId().equals(authenticatedUserId)) {
+                log.warn("User {} attempted to access account {} owned by user {}", 
+                        authenticatedUserId, accountId, account.getUserId());
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, 
+                        "You are not authorized to access transactions for this account"
+                );
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error validating account ownership: {}", e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to validate account ownership"
+            );
+        }
     }
 
     private TransactionDto mapToDto(Transaction transaction) {

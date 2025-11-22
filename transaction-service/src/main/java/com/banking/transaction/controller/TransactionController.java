@@ -48,9 +48,11 @@ public class TransactionController {
     @GetMapping("/account/{accountId}")
     public ResponseEntity<List<TransactionDto>> getTransactionsByAccount(
             @Parameter(description = "Account ID", example = "101")
-            @PathVariable Long accountId
+            @PathVariable Long accountId,
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole
     ) {
-        List<TransactionDto> transactions = transactionService.getTransactionsByAccountId(accountId);
+        List<TransactionDto> transactions = transactionService.getTransactionsByAccountId(accountId, authenticatedUserId, userRole);
         return ResponseEntity.ok(transactions);
     }
 
@@ -63,9 +65,11 @@ public class TransactionController {
     @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionDto> getTransaction(
             @Parameter(description = "Transaction ID", example = "1001")
-            @PathVariable Long transactionId
+            @PathVariable Long transactionId,
+            @RequestHeader(value = "X-User-Id", required = false) Long authenticatedUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole
     ) {
-        TransactionDto transaction = transactionService.getTransactionById(transactionId);
+        TransactionDto transaction = transactionService.getTransactionById(transactionId, authenticatedUserId, userRole);
         return ResponseEntity.ok(transaction);
     }
 
