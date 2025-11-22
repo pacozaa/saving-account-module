@@ -10,8 +10,6 @@ This document provides comprehensive test scenarios with curl commands to test a
 
 **Legend:** ❌ = FAILED | ⏳ = Pending Test
 
-1. [Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ❌](#test-case-43-deposit-with-invalid-amount-less-than-1-thb-)
-2. [Test Case 4.5: Non-TELLER User Tries to Deposit ❌](#test-case-45-non-teller-user-tries-to-deposit-)
 3. [Test Case 5.3: Unauthorized Access to Another User's Account ❌](#test-case-53-unauthorized-access-to-another-users-account-)
 4. [Test Case 6.6: Transfer by Non-Owner of Source Account ❌](#test-case-66-transfer-by-non-owner-of-source-account-)
 5. [Test Case 7.3: Unauthorized Access to Another Account's Transactions ❌](#test-case-73-unauthorized-access-to-another-accounts-transactions-)
@@ -406,7 +404,7 @@ curl -X POST http://localhost:8080/api/deposit \
 }
 ```
 
-### Test Case 4.5: Non-TELLER User Tries to Deposit ❌
+### Test Case 4.5: Non-TELLER User Tries to Deposit ✅
 
 **Explanation:** Regular customer should not be able to perform deposits (only tellers can).
 

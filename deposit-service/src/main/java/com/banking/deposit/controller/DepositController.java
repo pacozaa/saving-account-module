@@ -29,7 +29,8 @@ public class DepositController {
     @Operation(
             summary = "Make a Deposit",
             description = "Deposits money into a specified account. " +
-                    "Coordinates with Account Service to update balance and Transaction Service to log the transaction."
+                    "Coordinates with Account Service to update balance and Transaction Service to log the transaction. " +
+                    "**AUTHORIZATION: Only users with TELLER role can perform deposits.**"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -45,20 +46,32 @@ public class DepositController {
                     description = "Invalid request data"
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden - Only tellers are authorized to perform deposits"
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Account not found"
             ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "Unauthorized"
+                    description = "Unauthorized - Invalid or missing JWT token"
             )
     })
     @PostMapping
     public ResponseEntity<DepositResponse> deposit(
-            @Valid @RequestBody DepositRequest request
+            @Valid @RequestBody DepositRequest request,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole
     ) {
-        log.info("POST /deposit - accountId: {}, amount: {}", 
-                request.getAccountId(), request.getAmount());
+        log.info("POST /deposit - accountId: {}, amount: {}, userRole: {}", 
+                request.getAccountId(), request.getAmount(), userRole);
+        
+        // Only TELLER can perform deposits
+        if (!"TELLER".equals(userRole)) {
+            log.warn("Unauthorized deposit attempt by role: {}", userRole);
+            throw new com.banking.deposit.exception.UnauthorizedException(
+                    "Only tellers are authorized to perform deposits");
+        }
         
         DepositResponse response = depositService.processDeposit(request);
         return ResponseEntity.ok(response);

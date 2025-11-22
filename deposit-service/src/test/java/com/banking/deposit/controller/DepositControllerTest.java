@@ -62,13 +62,14 @@ class DepositControllerTest {
     }
 
     @Test
-    void testDeposit_ValidRequest_Returns200() throws Exception {
+    void testDeposit_ValidRequest_WithTellerRole_Returns200() throws Exception {
         // Given
         when(depositService.processDeposit(any(DepositRequest.class)))
                 .thenReturn(successResponse);
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isOk())
@@ -77,6 +78,41 @@ class DepositControllerTest {
                 .andExpect(jsonPath("$.amount").value(1000.00))
                 .andExpect(jsonPath("$.newBalance").value(2500.00))
                 .andExpect(jsonPath("$.message").value("Deposit successful"));
+    }
+
+    @Test
+    void testDeposit_WithCustomerRole_Returns403() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "CUSTOMER")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Only tellers are authorized to perform deposits"));
+    }
+
+    @Test
+    void testDeposit_WithPersonRole_Returns403() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "PERSON")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Only tellers are authorized to perform deposits"));
+    }
+
+    @Test
+    void testDeposit_WithoutRole_Returns403() throws Exception {
+        // When & Then - No X-User-Role header
+        mockMvc.perform(post("/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("Only tellers are authorized to perform deposits"));
     }
 
     @Test
@@ -91,6 +127,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
@@ -108,6 +145,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
@@ -125,6 +163,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
@@ -142,6 +181,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
@@ -168,6 +208,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isNotFound());
@@ -194,6 +235,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isInternalServerError());
@@ -222,6 +264,7 @@ class DepositControllerTest {
 
         // When & Then
         mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(minimalRequest)))
                 .andExpect(status().isOk())

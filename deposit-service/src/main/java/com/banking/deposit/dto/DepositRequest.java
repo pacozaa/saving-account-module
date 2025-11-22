@@ -19,9 +19,9 @@ public class DepositRequest {
     @NotNull(message = "Account ID is required")
     private String accountId;
 
-    @Schema(description = "Deposit amount", example = "1000.00", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Deposit amount (minimum 1)", example = "1000.00", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Amount is required")
-    @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
+    @DecimalMin(value = "1.0", message = "Amount must be at least 1")
     private BigDecimal amount;
 
     @Schema(description = "Teller ID processing the deposit", example = "5")
