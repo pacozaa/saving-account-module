@@ -16,6 +16,9 @@ public class CreateAccountRequest {
     @NotNull(message = "User ID is required")
     private Long userId;
     
+    @NotBlank(message = "Citizen ID is required")
+    private String citizenId;
+    
     @NotBlank(message = "Account type is required")
     private String accountType;
     

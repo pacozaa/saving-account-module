@@ -22,12 +22,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
     
     @Mock
     private AccountRepository accountRepository;
+    
+    @Mock
+    private com.banking.account.client.RegisterServiceClient registerServiceClient;
     
     @InjectMocks
     private AccountService accountService;
@@ -45,7 +49,14 @@ class AccountServiceTest {
             .createdAt(LocalDateTime.now())
             .build();
         
-        createRequest = new CreateAccountRequest(1L, "SAVINGS", new BigDecimal("500.00"));
+        createRequest = new CreateAccountRequest(1L, "1234567890123", "SAVINGS", new BigDecimal("500.00"));
+        
+        // Mock the RegisterServiceClient to return a valid user (lenient to avoid unnecessary stubbing errors)
+        com.banking.account.client.dto.UserDto mockUser = com.banking.account.client.dto.UserDto.builder()
+            .id(1L)
+            .citizenId("1234567******")
+            .build();
+        lenient().when(registerServiceClient.getUserById(1L)).thenReturn(mockUser);
     }
     
     @Test
@@ -66,7 +77,7 @@ class AccountServiceTest {
     @Test
     void testCreateAccount_WithNullInitialBalance_DefaultsToZero() {
         // Given
-        CreateAccountRequest requestWithoutBalance = new CreateAccountRequest(1L, "CHECKING", null);
+        CreateAccountRequest requestWithoutBalance = new CreateAccountRequest(1L, "1234567890123", "CHECKING", null);
         Account accountWithZeroBalance = Account.builder()
             .id("7654321")
             .userId(1L)
@@ -234,5 +245,47 @@ class AccountServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(accountRepository).findByUserId(userId);
+    }
+    
+    @Test
+    void testCreateAccount_WithInvalidCitizenId_ThrowsException() {
+        // Given
+        CreateAccountRequest requestWithWrongCitizenId = new CreateAccountRequest(1L, "9999999999999", "SAVINGS", new BigDecimal("500.00"));
+        
+        com.banking.account.client.dto.UserDto mockUser = com.banking.account.client.dto.UserDto.builder()
+            .id(1L)
+            .citizenId("1234567******")
+            .build();
+        when(registerServiceClient.getUserById(1L)).thenReturn(mockUser);
+        
+        // When & Then
+        assertThatThrownBy(() -> accountService.createAccount(requestWithWrongCitizenId))
+            .isInstanceOf(com.banking.account.exception.CitizenIdMismatchException.class)
+            .hasMessageContaining("Citizen ID does not match the user ID");
+        
+        verify(registerServiceClient).getUserById(1L);
+        verify(accountRepository, never()).save(any(Account.class));
+    }
+    
+    @Test
+    void testCreateAccount_WithValidCitizenId_Success() {
+        // Given
+        CreateAccountRequest request = new CreateAccountRequest(1L, "1234567890123", "SAVINGS", new BigDecimal("500.00"));
+        
+        com.banking.account.client.dto.UserDto mockUser = com.banking.account.client.dto.UserDto.builder()
+            .id(1L)
+            .citizenId("1234567******")
+            .build();
+        when(registerServiceClient.getUserById(1L)).thenReturn(mockUser);
+        when(accountRepository.save(any(Account.class))).thenReturn(testAccount);
+        
+        // When
+        AccountDto result = accountService.createAccount(request);
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getUserId()).isEqualTo(1L);
+        verify(registerServiceClient).getUserById(1L);
+        verify(accountRepository).save(any(Account.class));
     }
 }

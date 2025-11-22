@@ -20,10 +20,15 @@ import java.util.stream.Collectors;
 public class AccountService {
     
     private final AccountRepository accountRepository;
+    private final com.banking.account.client.RegisterServiceClient registerServiceClient;
     
     @Transactional
     public AccountDto createAccount(CreateAccountRequest request) {
-        log.info("Creating account for userId: {}, accountType: {}", request.getUserId(), request.getAccountType());
+        log.info("Creating account for userId: {}, citizenId: {}, accountType: {}", 
+                request.getUserId(), request.getCitizenId(), request.getAccountType());
+        
+        // Validate that the citizen ID matches the user ID
+        validateCitizenIdMatchesUserId(request.getUserId(), request.getCitizenId());
         
         BigDecimal initialBalance = request.getInitialBalance() != null ? 
             request.getInitialBalance() : BigDecimal.ZERO;
@@ -38,6 +43,49 @@ public class AccountService {
         log.info("Account created successfully with id: {}", savedAccount.getId());
         
         return mapToDto(savedAccount);
+    }
+    
+    private void validateCitizenIdMatchesUserId(Long userId, String citizenId) {
+        try {
+            log.info("Validating citizen ID for userId: {}", userId);
+            
+            com.banking.account.client.dto.UserDto user = registerServiceClient.getUserById(userId);
+            
+            if (user == null) {
+                log.error("User not found with id: {}", userId);
+                throw new IllegalArgumentException("User not found with id: " + userId);
+            }
+            
+            // Remove mask from citizen ID if present (format: 1234567******)
+            String userCitizenId = user.getCitizenId();
+            if (userCitizenId != null && userCitizenId.contains("*")) {
+                // Extract the visible part (first 7 digits)
+                String visiblePart = userCitizenId.split("\\*")[0];
+                // Check if the provided citizen ID starts with the visible part
+                if (!citizenId.startsWith(visiblePart)) {
+                    log.error("Citizen ID mismatch for userId: {}. Provided: {}, Expected prefix: {}", 
+                            userId, citizenId, visiblePart);
+                    throw new com.banking.account.exception.CitizenIdMismatchException(
+                        "Citizen ID does not match the user ID. Please verify your citizen ID.");
+                }
+                // If visible part matches, we'll trust it (since we can't verify the masked part)
+                log.info("Citizen ID validation passed (partial match) for userId: {}", userId);
+            } else if (userCitizenId != null && !userCitizenId.equals(citizenId)) {
+                // Full comparison if not masked
+                log.error("Citizen ID mismatch for userId: {}. Provided: {}, Expected: {}", 
+                        userId, citizenId, userCitizenId);
+                throw new com.banking.account.exception.CitizenIdMismatchException(
+                    "Citizen ID does not match the user ID. Please verify your citizen ID.");
+            }
+            
+            log.info("Citizen ID validation passed for userId: {}", userId);
+            
+        } catch (com.banking.account.exception.CitizenIdMismatchException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Error validating citizen ID for userId: {}", userId, ex);
+            throw new IllegalArgumentException("Unable to validate citizen ID. Please try again later.");
+        }
     }
     
     @Transactional(readOnly = true)

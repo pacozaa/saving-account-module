@@ -51,7 +51,7 @@ class AccountControllerTest {
             .createdAt(LocalDateTime.now())
             .build();
         
-        createRequest = new CreateAccountRequest(1L, "SAVINGS", new BigDecimal("500.00"));
+        createRequest = new CreateAccountRequest(1L, "1234567890123", "SAVINGS", new BigDecimal("500.00"));
     }
     
     @Test
@@ -73,7 +73,7 @@ class AccountControllerTest {
     @Test
     void testCreateAccount_MissingUserId_Returns400() throws Exception {
         // Given
-        CreateAccountRequest invalidRequest = new CreateAccountRequest(null, "SAVINGS", new BigDecimal("500.00"));
+        CreateAccountRequest invalidRequest = new CreateAccountRequest(null, "1234567890123", "SAVINGS", new BigDecimal("500.00"));
         
         // When & Then
         mockMvc.perform(post("/accounts/create")
@@ -85,7 +85,7 @@ class AccountControllerTest {
     @Test
     void testCreateAccount_MissingAccountType_Returns400() throws Exception {
         // Given
-        CreateAccountRequest invalidRequest = new CreateAccountRequest(1L, "", new BigDecimal("500.00"));
+        CreateAccountRequest invalidRequest = new CreateAccountRequest(1L, "1234567890123", "", new BigDecimal("500.00"));
         
         // When & Then
         mockMvc.perform(post("/accounts/create")
