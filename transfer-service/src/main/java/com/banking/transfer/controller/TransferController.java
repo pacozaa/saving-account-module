@@ -2,6 +2,7 @@ package com.banking.transfer.controller;
 
 import com.banking.transfer.dto.TransferRequest;
 import com.banking.transfer.dto.TransferResponse;
+import com.banking.transfer.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,16 +11,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/transfer")
 @Tag(name = "Transfer Operations", description = "Endpoints for fund transfer orchestration")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class TransferController {
+
+    private final TransferService transferService;
 
     @Operation(
             summary = "Transfer Funds",
@@ -53,23 +58,10 @@ public class TransferController {
     public ResponseEntity<TransferResponse> transfer(
             @Valid @RequestBody TransferRequest request
     ) {
-        // TODO: Implement actual orchestration logic
-        // 1. Validate both accounts exist (call Account Service)
-        // 2. Check sufficient funds in source account
-        // 3. Deduct from source account (call Account Service)
-        // 4. Credit to destination account (call Account Service)
-        // 5. Log transaction (call Transaction Service)
+        log.info("POST /transfer - from: {}, to: {}, amount: {}", 
+                request.getFromAccountId(), request.getToAccountId(), request.getAmount());
         
-        TransferResponse response = new TransferResponse(
-                1002L,
-                request.getFromAccountId(),
-                request.getToAccountId(),
-                request.getAmount(),
-                new BigDecimal("1000.00"),
-                new BigDecimal("1500.00"),
-                "Transfer successful"
-        );
-        
+        TransferResponse response = transferService.transfer(request);
         return ResponseEntity.ok(response);
     }
 

@@ -1,0 +1,36 @@
+sequenceDiagram
+    actor User
+    participant API Gateway
+    participant Register Service
+    participant Auth Service
+    participant Users DB
+
+    User->>API Gateway: Register (username, password, email)
+    API Gateway->>Register Service: POST /register
+    
+    Register Service->>Register Service: Validate input
+    Register Service->>Auth Service: Request JWT token generation
+    
+    Auth Service->>Auth Service: Sign token with secret key<br/>(exp: 24 hours)
+    Auth Service-->>Register Service: Return JWT token
+    
+    Register Service->>Users DB: Save user credentials
+    Users DB-->>Register Service: User saved
+    
+    Register Service-->>API Gateway: Return JWT token + user data
+    API Gateway-->>User: 200 OK with JWT token
+    
+    Note over User,Auth Service: Subsequent Requests
+    
+    User->>API Gateway: Request with JWT in header<br/>(e.g., GET /accounts)
+    API Gateway->>Auth Service: Validate JWT token
+    
+    Auth Service->>Auth Service: Verify signature with secret key<br/>Check expiration<br/>Decode claims
+    
+    alt Token Valid
+        Auth Service-->>API Gateway: ✓ Token valid + user claims
+        API Gateway->>User: Process request
+    else Token Invalid/Expired
+        Auth Service-->>API Gateway: ✗ Unauthorized
+        API Gateway-->>User: 401 Unauthorized
+    end

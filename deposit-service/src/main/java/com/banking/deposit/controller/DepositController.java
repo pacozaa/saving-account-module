@@ -2,6 +2,7 @@ package com.banking.deposit.controller;
 
 import com.banking.deposit.dto.DepositRequest;
 import com.banking.deposit.dto.DepositResponse;
+import com.banking.deposit.service.DepositService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,16 +11,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/deposit")
 @Tag(name = "Deposit Operations", description = "Endpoints for deposit orchestration")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@Slf4j
 public class DepositController {
+
+    private final DepositService depositService;
 
     @Operation(
             summary = "Make a Deposit",
@@ -52,19 +57,10 @@ public class DepositController {
     public ResponseEntity<DepositResponse> deposit(
             @Valid @RequestBody DepositRequest request
     ) {
-        // TODO: Implement actual orchestration logic
-        // 1. Validate account exists (call Account Service)
-        // 2. Update account balance (call Account Service)
-        // 3. Log transaction (call Transaction Service)
+        log.info("POST /deposit - accountId: {}, amount: {}", 
+                request.getAccountId(), request.getAmount());
         
-        DepositResponse response = new DepositResponse(
-                1001L,
-                request.getAccountId(),
-                request.getAmount(),
-                new BigDecimal("2500.00"),
-                "Deposit successful"
-        );
-        
+        DepositResponse response = depositService.processDeposit(request);
         return ResponseEntity.ok(response);
     }
 

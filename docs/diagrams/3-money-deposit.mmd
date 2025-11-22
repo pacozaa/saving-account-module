@@ -1,0 +1,61 @@
+sequenceDiagram
+    participant Customer as CUSTOMER (Client)
+    participant Teller as TELLER (Client)
+    participant Gateway as API Gateway
+    participant Auth as Auth Service
+    participant Deposit as Deposit Service
+    participant Account as Account Service
+    participant AccountsDB as Accounts DB
+    participant Transaction as Transaction Service
+    participant TransDB as Transactions DB
+
+    Note over Customer,TransDB: Feature 3: Money Deposit
+
+    Customer->>Teller: Request to deposit<br/>{accountNumber, amount}
+    
+    Note over Teller: TELLER must be authenticated
+    Teller->>Gateway: POST /auth/login<br/>{username, password}
+    Gateway->>Auth: Validate credentials
+    Auth-->>Gateway: JWT token (role=TELLER)
+    Gateway-->>Teller: {token, expiresIn}
+    
+    Teller->>Gateway: POST /deposit<br/>Authorization: Bearer {token}<br/>{accountNumber, amount, tellerId}
+    Gateway->>Gateway: Validate JWT & role=TELLER
+    Gateway->>Deposit: Forward deposit request
+    
+    Deposit->>Deposit: Validate amount >= 1 THB
+    
+    Note over Deposit,Account: Step 1: Validate account exists
+    
+    Deposit->>Account: GET /accounts/number/{accountNumber}
+    Account->>AccountsDB: SELECT Account<br/>WHERE accountNumber = ?
+    
+    alt Account not found
+        AccountsDB-->>Account: No record
+        Account-->>Deposit: 404 Account not found
+        Deposit-->>Gateway: 404 Account not found
+        Gateway-->>Teller: Error: Invalid account number
+        Teller-->>Customer: Account not found
+    else Account exists
+        AccountsDB-->>Account: Account details
+        Account-->>Deposit: {accountId, balance}
+        
+        Note over Deposit,Account: Step 2: Update account balance
+        
+        Deposit->>Account: PUT /accounts/{accountId}/balance<br/>{amount: +depositAmount}
+        Account->>Account: newBalance = currentBalance + amount
+        Account->>AccountsDB: UPDATE Account<br/>SET balance = newBalance<br/>WHERE id = accountId
+        AccountsDB-->>Account: Balance updated
+        Account-->>Deposit: {accountId, newBalance}
+        
+        Note over Deposit,Transaction: Step 3: Log transaction
+        
+        Deposit->>Transaction: POST /transactions<br/>{accountId, type=DEPOSIT,<br/>amount, tellerId,<br/>description="Deposit by teller"}
+        Transaction->>TransDB: INSERT Transaction<br/>(accountId, type, amount,<br/>balance_after, timestamp,<br/>performedBy)
+        TransDB-->>Transaction: Transaction logged
+        Transaction-->>Deposit: {transactionId}
+        
+        Deposit-->>Gateway: 200 OK<br/>{accountNumber, newBalance,<br/>transactionId}
+        Gateway-->>Teller: Deposit successful<br/>{newBalance}
+        Teller-->>Customer: Deposit successful!<br/>New balance: {newBalance} THB
+    end

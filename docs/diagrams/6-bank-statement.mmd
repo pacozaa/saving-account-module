@@ -1,0 +1,84 @@
+sequenceDiagram
+    participant Customer as CUSTOMER (Client)
+    participant Gateway as API Gateway
+    participant Auth as Auth Service
+    participant UsersDB as Users DB
+    participant Account as Account Service
+    participant AccountsDB as Accounts DB
+    participant Transaction as Transaction Service
+    participant TransDB as Transactions DB
+
+    Note over Customer,TransDB: Feature 6: Bank Statement
+
+    Note over Customer: Step 1: CUSTOMER logs in
+    
+    Customer->>Gateway: POST /auth/login<br/>{email, password}
+    Gateway->>Auth: Validate credentials
+    Auth->>UsersDB: Verify user & get userId
+    Auth-->>Gateway: {token, userId}
+    Gateway-->>Customer: {token, userId}
+    
+    Note over Customer: Step 2: Request bank statement with PIN
+    
+    Customer->>Gateway: GET /transactions/statement<br/>Authorization: Bearer {token}<br/>?accountNumber={accountNumber}<br/>&month={YYYY-MM}<br/>&pin={pin}
+    Gateway->>Gateway: Validate JWT token
+    Gateway->>Gateway: Extract userId from token
+    Gateway->>Transaction: Forward statement request
+    
+    Note over Transaction,Auth: Step 3: Verify PIN
+    
+    Transaction->>Auth: POST /auth/verify-pin<br/>{userId, pin}
+    Auth->>UsersDB: SELECT User WHERE id = userId
+    UsersDB-->>Auth: User with hashedPin
+    Auth->>Auth: Verify PIN (BCrypt)
+    
+    alt Invalid PIN
+        Auth-->>Transaction: 401 Invalid PIN
+        Transaction-->>Gateway: 401 Invalid PIN
+        Gateway-->>Customer: Failed: Invalid PIN
+    else Valid PIN
+        Auth-->>Transaction: 200 PIN verified
+        
+        Note over Transaction,Account: Step 4: Verify account ownership
+        
+        Transaction->>Account: GET /accounts/number/{accountNumber}
+        Account->>AccountsDB: SELECT Account<br/>WHERE accountNumber = ?
+        
+        alt Account not found
+            AccountsDB-->>Account: Not found
+            Account-->>Transaction: 404 Not found
+            Transaction-->>Gateway: 404 Account not found
+            Gateway-->>Customer: Error: Account not found
+        else Account found
+            AccountsDB-->>Account: Account details
+            Account-->>Transaction: {accountId, userId, accountNumber}
+            
+            Transaction->>Transaction: Verify ownership<br/>(account.userId == token.userId)
+            
+            alt Not account owner
+                Transaction-->>Gateway: 403 Forbidden
+                Gateway-->>Customer: Error: Not your account
+            else Account owner verified
+                
+                Note over Transaction,TransDB: Step 5: Fetch transactions
+                
+                Transaction->>Transaction: Parse month (YYYY-MM)<br/>Calculate start & end dates
+                Transaction->>TransDB: SELECT Transactions<br/>WHERE accountId = ?<br/>AND timestamp >= startDate<br/>AND timestamp < endDate<br/>ORDER BY timestamp ASC
+                
+                alt No transactions found
+                    TransDB-->>Transaction: Empty result
+                    Transaction-->>Gateway: 200 OK<br/>{accountNumber,<br/>month, transactions: []}
+                    Gateway-->>Customer: No transactions<br/>for this month
+                else Transactions found
+                    TransDB-->>Transaction: List of transactions<br/>(ordered by timestamp ASC)
+                    Transaction->>Transaction: Format response:<br/>- Transaction ID<br/>- Type (DEPOSIT/TRANSFER_IN/<br/>TRANSFER_OUT/WITHDRAWAL)<br/>- Amount<br/>- Balance after<br/>- Timestamp<br/>- Description
+                    
+                    Transaction-->>Gateway: 200 OK<br/>{accountNumber,<br/>month,<br/>startingBalance,<br/>endingBalance,<br/>transactions: [{<br/>  id, type, amount,<br/>  balanceAfter, timestamp,<br/>  description<br/>}]}<br/>Ordered: Past → Present
+                    
+                    Gateway-->>Customer: Bank Statement<br/>(Past → Present):<br/>- Account: {accountNumber}<br/>- Month: {YYYY-MM}<br/>- Starting Balance: {amount}<br/>- Ending Balance: {amount}<br/>- Transactions:<br/>  1. [Date] Type: Amount<br/>     Balance: {amount}<br/>  2. [Date] Type: Amount<br/>     Balance: {amount}<br/>  ...
+                end
+            end
+        end
+    end
+    
+    Note over Customer: Statement shows transactions<br/>from PAST to PRESENT

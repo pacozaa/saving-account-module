@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Person as PERSON (Client)
+    participant Gateway as API Gateway
+    participant Register as Register Service
+    participant UsersDB as Users DB
+    participant Account as Account Service
+    participant AccountsDB as Accounts DB
+
+    Note over Person,AccountsDB: Feature 1: Online Registration
+
+    Person->>Gateway: POST /register<br/>{email, password, citizenId,<br/>thaiName, englishName, pin}
+    Gateway->>Register: Forward registration request
+    
+    Register->>Register: Validate input data
+    Register->>Register: Hash password (BCrypt)
+    Register->>Register: Hash PIN (BCrypt)
+    
+    Register->>UsersDB: Check if email exists
+    UsersDB-->>Register: Email available
+    
+    Register->>UsersDB: Check if citizenId exists
+    UsersDB-->>Register: CitizenId available
+    
+    Register->>UsersDB: INSERT User<br/>(email, hashedPassword,<br/>citizenId, thaiName,<br/>englishName, hashedPin,<br/>role=PERSON)
+    UsersDB-->>Register: User created (userId)
+    
+    Note over Register,Account: Create default account for new PERSON
+    
+    Register->>Account: POST /accounts/create<br/>{userId, accountType=SAVINGS}
+    Account->>Account: Generate 7-digit account number
+    Account->>AccountsDB: INSERT Account<br/>(userId, accountNumber,<br/>balance=0, accountType)
+    AccountsDB-->>Account: Account created
+    Account-->>Register: {accountId, accountNumber}
+    
+    Register-->>Gateway: {userId, accountNumber,<br/>message: "Registration successful"}
+    Gateway-->>Person: 201 Created<br/>{userId, accountNumber}
+    
+    Note over Person: Registration complete<br/>User can now login

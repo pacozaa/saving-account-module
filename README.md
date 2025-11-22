@@ -355,13 +355,6 @@ curl http://localhost:8080/actuator/health
 curl http://localhost:8080/actuator/info
 curl http://localhost:8080/actuator/metrics
 
-# Check individual services through the gateway
-curl http://localhost:8080/api/auth/actuator/health
-curl http://localhost:8080/api/register/actuator/health
-curl http://localhost:8080/api/accounts/actuator/health
-curl http://localhost:8080/api/transactions/actuator/health
-curl http://localhost:8080/api/deposit/actuator/health
-curl http://localhost:8080/api/transfer/actuator/health
 ```
 
 #### Check Services Directly

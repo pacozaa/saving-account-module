@@ -85,23 +85,22 @@ echo -e "${BLUE}Starting services...${NC}"
 echo ""
 
 # 1. Start Eureka Server (wait 30s for full startup)
-start_service "Eureka Server" "eureka-server" 30
+start_service "Eureka Server" "eureka-server" 1
 
 # 2. Start API Gateway (wait 20s)
-start_service "API Gateway" "api-gateway" 20
+start_service "API Gateway" "api-gateway" 1
 
 # 3. Start Data Services (wait 15s each for DB initialization)
-start_service "Account Service" "account-service" 15
-start_service "Transaction Service" "transaction-service" 15
-start_service "Register Service" "register-service" 15
+start_service "Account Service" "account-service" 1
+start_service "Transaction Service" "transaction-service" 1
+start_service "Register Service" "register-service" 1
 
 # 4. Start Auth Service (wait 10s)
-start_service "Auth Service" "auth-service" 10
+start_service "Auth Service" "auth-service" 1
 
 # 5. Start Orchestrator Services (wait 10s each)
-start_service "Deposit Service" "deposit-service" 10
-start_service "Transfer Service" "transfer-service" 10
-
+start_service "Deposit Service" "deposit-service" 1
+start_service "Transfer Service" "transfer-service" 1
 echo ""
 echo -e "${BLUE}================================================${NC}"
 echo -e "${GREEN}✓ All services started successfully!${NC}"
@@ -119,7 +118,7 @@ echo -e "  Transfer Service:   ${GREEN}http://localhost:8086${NC}"
 echo ""
 echo -e "${YELLOW}Logs:${NC}"
 echo -e "  Log files are available in: ${GREEN}./${LOG_DIR}/${NC}"
-echo -e "  To view logs: ${GREEN}tail -f ${LOG_DIR}/<service-name>.log${NC}"
+echo -e "  To view logs: ${GREEN}tail -f \${LOG_DIR}/<service-name>.log${NC}"
 echo ""
 echo -e "${YELLOW}Process Management:${NC}"
 echo -e "  To stop all services: ${GREEN}./stop.sh${NC}"
@@ -129,4 +128,5 @@ echo -e "${BLUE}Waiting for all services to register with Eureka...${NC}"
 echo -e "${BLUE}This may take 30-60 seconds.${NC}"
 echo ""
 echo -e "${GREEN}You can now access the API Gateway at: http://localhost:8080${NC}"
+echo -e "${GREEN}Access Swagger UI at: http://localhost:8080/swagger-ui.html${NC}"
 echo -e "${GREEN}Check service registration at: http://localhost:8761${NC}"

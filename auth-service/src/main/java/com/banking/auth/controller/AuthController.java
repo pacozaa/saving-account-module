@@ -3,6 +3,7 @@ package com.banking.auth.controller;
 import com.banking.auth.dto.ErrorResponse;
 import com.banking.auth.dto.LoginRequest;
 import com.banking.auth.dto.LoginResponse;
+import com.banking.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,16 +11,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Authentication and JWT token management endpoints")
 public class AuthController {
+
+    private final AuthService authService;
 
     @Operation(
             summary = "User Login",
@@ -52,18 +54,8 @@ public class AuthController {
             )
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        // TODO: Implement actual authentication logic
-        // This is a sample implementation for demonstration purposes
-        
-        // Mock successful login
-        LoginResponse response = new LoginResponse(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.sample.token",
-                1L,
-                loginRequest.getUsername(),
-                "CUSTOMER"
-        );
-        
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        LoginResponse response = authService.login(loginRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -86,11 +78,24 @@ public class AuthController {
             )
     })
     @GetMapping("/validate")
-    public ResponseEntity<?> validateToken(
+    public ResponseEntity<String> validateToken(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
-        // TODO: Implement token validation logic
-        return ResponseEntity.ok().body("Token is valid");
+        // Extract token from "Bearer <token>"
+        String token = authorizationHeader.replace("Bearer ", "");
+        
+        if (authService.validateToken(token)) {
+            Long userId = authService.extractUserId(token);
+            String username = authService.extractUsername(token);
+            String role = authService.extractRole(token);
+            
+            return ResponseEntity.ok(String.format(
+                    "{\"valid\": true, \"userId\": %d, \"username\": \"%s\", \"role\": \"%s\"}",
+                    userId, username, role
+            ));
+        }
+        
+        return ResponseEntity.status(401).body("{\"valid\": false, \"message\": \"Invalid or expired token\"}");
     }
 
     @Operation(

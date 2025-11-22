@@ -15,9 +15,9 @@ import java.math.BigDecimal;
 @Schema(description = "Deposit request")
 public class DepositRequest {
 
-    @Schema(description = "Account ID to deposit into", example = "101", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Account ID to deposit into (7-digit account number)", example = "1234567", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Account ID is required")
-    private Long accountId;
+    private String accountId;
 
     @Schema(description = "Deposit amount", example = "1000.00", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Amount is required")

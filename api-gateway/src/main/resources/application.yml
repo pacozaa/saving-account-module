@@ -9,37 +9,37 @@ spring:
           predicates:
             - Path=/api/auth/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: register-service
           uri: lb://register-service
           predicates:
             - Path=/api/register/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: deposit-service
           uri: lb://deposit-service
           predicates:
             - Path=/api/deposit/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: transfer-service
           uri: lb://transfer-service
           predicates:
             - Path=/api/transfer/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: account-service
           uri: lb://account-service
           predicates:
             - Path=/api/accounts/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: transaction-service
           uri: lb://transaction-service
           predicates:
             - Path=/api/transactions/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
 
 server:
   port: 8080
@@ -57,6 +57,9 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: banking-system-secret-key-for-jwt-token-generation-and-validation
 
 springdoc:
   swagger-ui:

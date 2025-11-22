@@ -2,7 +2,7 @@ spring:
   application:
     name: transaction-service
   datasource:
-    url: jdbc:h2:mem:transactionsdb
+    url: jdbc:h2:file:./data/bankingdb
     driver-class-name: org.h2.Driver
     username: sa
     password: 

@@ -16,8 +16,8 @@ public class DepositResponse {
     @Schema(description = "Transaction ID", example = "1001")
     private Long transactionId;
 
-    @Schema(description = "Account ID", example = "101")
-    private Long accountId;
+    @Schema(description = "Account ID (7-digit account number)", example = "1234567")
+    private String accountId;
 
     @Schema(description = "Deposited amount", example = "1000.00")
     private BigDecimal amount;
