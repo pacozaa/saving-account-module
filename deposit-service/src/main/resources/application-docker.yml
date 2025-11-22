@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: deposit-service
+
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  instance:
+    hostname: deposit-service
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/

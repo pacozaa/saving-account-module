@@ -1,21 +1,6 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
-WORKDIR /workspace/app
-
-# Copy maven wrapper and parent pom
-COPY ../pom.xml ../pom.xml
-COPY ../mvnw ../mvnw
-COPY ../.mvn ../.mvn
-
-# Copy this service
-COPY pom.xml .
-COPY src src
-
-# Build
-RUN cd .. && ./mvnw clean package -pl deposit-service -am -DskipTests
-
-# Runtime stage
 FROM eclipse-temurin:17-jre-alpine
 VOLUME /tmp
-COPY --from=build /workspace/app/target/*.jar app.jar
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
 EXPOSE 8085
 ENTRYPOINT ["java","-jar","/app.jar"]

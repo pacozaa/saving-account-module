@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        - id: register-service
+          uri: lb://register-service
+          predicates:
+            - Path=/api/register/**
+          filters:
+            - StripPrefix=1
+        - id: deposit-service
+          uri: lb://deposit-service
+          predicates:
+            - Path=/api/deposit/**
+          filters:
+            - StripPrefix=1
+        - id: transfer-service
+          uri: lb://transfer-service
+          predicates:
+            - Path=/api/transfer/**
+          filters:
+            - StripPrefix=1
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/accounts/**
+          filters:
+            - StripPrefix=1
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/transactions/**
+          filters:
+            - StripPrefix=1
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  instance:
+    hostname: api-gateway
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+
+jwt:
+  secret: banking-system-secret-key-for-jwt-token-generation-and-validation
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /api/auth/v3/api-docs
+      - name: Register Service
+        url: /api/register/v3/api-docs
+      - name: Account Service
+        url: /api/accounts/v3/api-docs
+      - name: Transaction Service
+        url: /api/transactions/v3/api-docs
+      - name: Deposit Service
+        url: /api/deposit/v3/api-docs
+      - name: Transfer Service
+        url: /api/transfer/v3/api-docs
+  api-docs:
+    enabled: true

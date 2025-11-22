@@ -60,12 +60,10 @@ stop_service "Eureka Server"
 
 echo ""
 echo -e "${GREEN}✓ All services stopped${NC}"
-echo ""
 
-# Optional: Clean up log files
-read -p "Do you want to clean up log files? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+# Clean up log files
+if [ -d "$LOG_DIR" ]; then
     rm -rf "$LOG_DIR"
     echo -e "${GREEN}✓ Log files cleaned${NC}"
 fi
+echo ""

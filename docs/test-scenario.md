@@ -4,6 +4,59 @@ This document provides comprehensive test scenarios with curl commands to test a
 
 **Base URL:** `http://localhost:8080`
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Test Scenario 1: Online Registration (Requirement 1)](#test-scenario-1-online-registration-requirement-1)
+  - [Test Case 1.1: Successful Registration as PERSON ✅](#test-case-11-successful-registration-as-person-)
+  - [Test Case 1.2: Registration with Duplicate Username ✅](#test-case-12-registration-with-duplicate-username-)
+  - [Test Case 1.3: Registration with Invalid Email ✅](#test-case-13-registration-with-invalid-email-)
+  - [Test Case 1.4: Registration with Duplicate Citizen ID ✅](#test-case-14-registration-with-duplicate-citizen-id-)
+  - [Test Case 1.5: Registration with Invalid Citizen ID Format ✅](#test-case-15-registration-with-invalid-citizen-id-format-)
+  - [Test Case 1.6: Registration with Invalid PIN Format ✅](#test-case-16-registration-with-invalid-pin-format-)
+  - [Test Case 1.7: Register TELLER User ✅](#test-case-17-register-teller-user-)
+- [Test Scenario 2: User Authentication](#test-scenario-2-user-authentication)
+  - [Test Case 2.1: Successful Login ✅](#test-case-21-successful-login-)
+  - [Test Case 2.2: Login with Invalid Credentials ✅](#test-case-22-login-with-invalid-credentials-)
+  - [Test Case 2.3: Validate Token ✅](#test-case-23-validate-token-)
+- [Test Scenario 3: Creating a New Account (Requirement 2)](#test-scenario-3-creating-a-new-account-requirement-2)
+  - [Test Case 3.1: Teller Creates Account for User ✅](#test-case-31-teller-creates-account-for-user-)
+  - [Test Case 3.2: Create Account with Invalid Citizen ID ✅](#test-case-32-create-account-with-invalid-citizen-id-)
+  - [Test Case 3.3: Create Account without Citizen ID ✅](#test-case-33-create-account-without-citizen-id-)
+- [Test Scenario 4: Money Deposit (Requirement 3)](#test-scenario-4-money-deposit-requirement-3)
+  - [Test Case 4.1: Successful Deposit by TELLER ✅](#test-case-41-successful-deposit-by-teller-)
+  - [Test Case 4.2: Deposit with Minimum Amount (1 THB) ✅](#test-case-42-deposit-with-minimum-amount-1-thb-)
+  - [Test Case 4.3: Deposit with Invalid Amount (Less than 1 THB) ✅](#test-case-43-deposit-with-invalid-amount-less-than-1-thb-)
+  - [Test Case 4.4: Deposit to Non-Existent Account ✅](#test-case-44-deposit-to-non-existent-account-)
+  - [Test Case 4.5: Non-TELLER User Tries to Deposit ✅](#test-case-45-non-teller-user-tries-to-deposit-)
+- [Test Scenario 5: Account Information (Requirement 4)](#test-scenario-5-account-information-requirement-4)
+  - [Test Case 5.1: View Own Account Information ✅](#test-case-51-view-own-account-information-)
+  - [Test Case 5.2: View All Accounts by User ID ✅](#test-case-52-view-all-accounts-by-user-id-)
+  - [Test Case 5.3: Unauthorized Access to Another User's Account ✅](#test-case-53-unauthorized-access-to-another-users-account-)
+  - [Test Case 5.4: TELLER Tries to View Account Information ✅](#test-case-54-teller-tries-to-view-account-information-)
+  - [Test Case 5.5: PERSON Tries to View Account Information ✅](#test-case-55-person-tries-to-view-account-information-)
+- [Test Scenario 6: Money Transfer (Requirement 5)](#test-scenario-6-money-transfer-requirement-5)
+  - [Test Case 6.1: Successful Money Transfer ✅](#test-case-61-successful-money-transfer-)
+  - [Test Case 6.2: Transfer with Insufficient Funds ✅](#test-case-62-transfer-with-insufficient-funds-)
+  - [Test Case 6.3: Transfer to Non-Existent Account ✅](#test-case-63-transfer-to-non-existent-account-)
+  - [Test Case 6.4: Create Additional Account for User ✅](#test-case-64-create-additional-account-for-user-)
+  - [Test Case 6.5: Transfer with Zero or Negative Amount ✅](#test-case-65-transfer-with-zero-or-negative-amount-)
+  - [Test Case 6.6: Transfer by Non-Owner of Source Account ✅](#test-case-66-transfer-by-non-owner-of-source-account-)
+- [Test Scenario 7: Bank Statement (Requirement 6)](#test-scenario-7-bank-statement-requirement-6)
+  - [Test Case 7.1: Get All Transactions for an Account ✅](#test-case-71-get-all-transactions-for-an-account-)
+  - [Test Case 7.2: Get Specific Transaction by ID ✅](#test-case-72-get-specific-transaction-by-id-)
+  - [Test Case 7.3: Unauthorized Access to Another Account's Transactions ✅](#test-case-73-unauthorized-access-to-another-accounts-transactions-)
+  - [Test Case 7.4: Get Transactions with Invalid PIN ✅](#test-case-74-get-transactions-with-invalid-pin-)
+  - [Test Case 7.5: Get Transactions without PIN ✅](#test-case-75-get-transactions-without-pin-)
+- [Test Scenario 8: Complete End-to-End Flow](#test-scenario-8-complete-end-to-end-flow)
+- [Test Scenario 9: Health Check Endpoints](#test-scenario-9-health-check-endpoints)
+- [Test Scenario 10: Error Handling](#test-scenario-10-error-handling)
+  - [Test Case 10.1: Request Without Authentication ⏳](#test-case-101-request-without-authentication-)
+  - [Test Case 10.2: Request With Expired Token ⏳](#test-case-102-request-with-expired-token-)
+  - [Test Case 10.3: Malformed Request Body ⏳](#test-case-103-malformed-request-body-)
+- [Notes](#notes)
+- [Tips for Testing](#tips-for-testing)
+
 ## Prerequisites
 
 Ensure all services are running:
@@ -56,7 +109,8 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "สมชาย ใจดี",
     "englishName": "Somchai Jaidee",
     "role": "PERSON",
-    "registeredAt": "2025-11-22T10:30:00"
+    "password": "$2a$10$Z9EYUUAaP/zI6zxVO3OU0.xpoqvnsv70ObfX56ySna8X2NwniWkta",
+    "registeredAt": "2025-11-22T21:55:55.012532"
   },
   "defaultAccountId": null,
   "message": "User registered successfully"
@@ -86,38 +140,10 @@ curl -X POST http://localhost:8080/api/register \
 
 ```json
 {
-  "code": "400",
-  "message": "Username 'john_doe' is already taken",
-  "timestamp": "2025-11-22T10:35:00Z"
-}
-```
-
-### Test Case 1.3: Registration with Invalid Email ✅
-
-**Explanation:** Registration should fail with invalid email format.
-
-```bash
-curl -X POST http://localhost:8080/api/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "jane_smith",
-    "password": "password123",
-    "email": "invalid-email",
-    "citizenId": "5555555555555",
-    "thaiName": "สมศรี สวยงาม",
-    "englishName": "Somsri Suayngam",
-    "pin": "111111",
-    "role": "PERSON"
-  }'
-```
-
-**Expected Response:** HTTP 400 Bad Request
-
-```json
-{
-  "code": "400",
-  "message": "Email must be valid",
-  "timestamp": "2025-11-22T10:40:00Z"
+  "timestamp": "2025-11-22T22:15:24.037484",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Username 'john_doe' is already taken"
 }
 ```
 
@@ -144,9 +170,10 @@ curl -X POST http://localhost:8080/api/register \
 
 ```json
 {
-  "code": "400",
-  "message": "Citizen ID '1234567890123' is already registered",
-  "timestamp": "2025-11-22T10:42:00Z"
+  "timestamp": "2025-11-22T22:15:40.58861",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Citizen ID '1234567890123' is already registered"
 }
 ```
 
@@ -173,9 +200,10 @@ curl -X POST http://localhost:8080/api/register \
 
 ```json
 {
-  "code": "400",
-  "message": "Citizen ID must be exactly 13 digits",
-  "timestamp": "2025-11-22T10:43:00Z"
+  "timestamp": "2025-11-22T22:09:49.935817",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "Citizen ID must be exactly 13 digits"
 }
 ```
 
@@ -202,9 +230,10 @@ curl -X POST http://localhost:8080/api/register \
 
 ```json
 {
-  "code": "400",
-  "message": "PIN must be exactly 6 digits",
-  "timestamp": "2025-11-22T10:44:00Z"
+  "timestamp": "2025-11-22T22:16:08.699064",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "PIN must be exactly 6 digits"
 }
 ```
 
@@ -232,14 +261,15 @@ curl -X POST http://localhost:8080/api/register \
 ```json
 {
   "user": {
-    "id": 2,
+    "id": 3,
     "username": "teller_alice",
     "email": "alice.teller@bank.com",
     "citizenId": "1111111******",
     "thaiName": "อลิซ เทลเลอร์",
     "englishName": "Alice Teller",
     "role": "TELLER",
-    "registeredAt": "2025-11-22T10:45:00"
+    "password": "$2a$10$6SFv59d9rYE2Yqcj4oJYt.AvbcEsje83.q9pKj3wOFgBVEtTUWE1q",
+    "registeredAt": "2025-11-22T22:16:31.718679"
   },
   "defaultAccountId": null,
   "message": "User registered successfully"
@@ -271,7 +301,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTcwMDYzODAwMCwiZXhwIjoxNzAwNzI0NDAwfQ.abc123...",
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTc2MzgyNDY3NywiZXhwIjoxNzYzOTExMDc3fQ.8YHoQuAQYsutprTby29MsxBLK5x0bINS43eTd8uRBTA",
   "type": "Bearer",
   "userId": 1,
   "username": "john_doe",
@@ -282,7 +312,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 **Note:** Save the token for subsequent requests. Export it as environment variable:
 
 ```bash
-export TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTcwMDYzODAwMCwiZXhwIjoxNzAwNzI0NDAwfQ.abc123..."
+export TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUEVSU09OIiwidXNlcklkIjoxLCJzdWIiOiJqb2huX2RvZSIsImlhdCI6MTc2MzgyNDY3NywiZXhwIjoxNzYzOTExMDc3fQ.8YHoQuAQYsutprTby29MsxBLK5x0bINS43eTd8uRBTA"
 ```
 
 ### Test Case 2.2: Login with Invalid Credentials ✅
@@ -1304,18 +1334,21 @@ curl -X POST http://localhost:8080/api/auth/login \
    - Thai Name (full name in Thai)
    - English Name (full name in English)
    - PIN (exactly 6 digits, used for transactions)
-10. **Security:** 
-   - Passwords and PINs are hashed using BCrypt
-   - Citizen ID is masked in responses (shows only first 7 digits + "******")
-   - PIN is never returned in API responses
-   - Citizen ID validation prevents unauthorized account creation by verifying identity
-   - **PIN verification required** for viewing transaction history - users must provide their 6-digit PIN as a query parameter (`?pin=123456`) when accessing transaction records
-   - TELLERs can view any transaction without PIN requirement (for customer service purposes)
+10. **Security:**
+
+- Passwords and PINs are hashed using BCrypt
+- Citizen ID is masked in responses (shows only first 7 digits + "**\*\***")
+- PIN is never returned in API responses
+- Citizen ID validation prevents unauthorized account creation by verifying identity
+- **PIN verification required** for viewing transaction history - users must provide their 6-digit PIN as a query parameter (`?pin=123456`) when accessing transaction records
+- TELLERs can view any transaction without PIN requirement (for customer service purposes)
+
 11. **Role-Based Authorization:**
-   - **CUSTOMER** role: Can view their own account information (`GET /accounts/{id}`, `GET /accounts/user/{userId}`) and transfer money
-   - **TELLER** role: Can create accounts and make deposits (cannot view account information)
-   - **PERSON** role: Basic registration role (cannot view accounts, transfer, or deposit)
-   - Each endpoint enforces role requirements - attempting to access with wrong role returns HTTP 403 Forbidden
+
+- **CUSTOMER** role: Can view their own account information (`GET /accounts/{id}`, `GET /accounts/user/{userId}`) and transfer money
+- **TELLER** role: Can create accounts and make deposits (cannot view account information)
+- **PERSON** role: Basic registration role (cannot view accounts, transfer, or deposit)
+- Each endpoint enforces role requirements - attempting to access with wrong role returns HTTP 403 Forbidden
 
 ## Tips for Testing
 

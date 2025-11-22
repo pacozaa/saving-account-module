@@ -46,6 +46,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    volumes:
+      - auth-data:/data
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -63,6 +65,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    volumes:
+      - register-data:/data
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -80,6 +84,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    volumes:
+      - account-data:/data
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -97,6 +103,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    volumes:
+      - transaction-data:/data
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -152,3 +160,7 @@ networks:
 
 volumes:
   eureka-data:
+  auth-data:
+  register-data:
+  account-data:
+  transaction-data:

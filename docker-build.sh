@@ -1,11 +1,23 @@
 #!/bin/bash
 
 # Build script for Docker images
+echo "Building JAR files for all microservices..."
+
+# Build all Maven modules
+./mvnw clean package -DskipTests
+
+if [ $? -ne 0 ]; then
+    echo "Maven build failed!"
+    exit 1
+fi
+
+echo ""
 echo "Building Docker images for all microservices..."
 
 # Build all services
 docker-compose build
 
+echo ""
 echo "Docker images built successfully!"
 echo ""
 echo "To start all services, run:"
