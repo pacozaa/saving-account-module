@@ -188,6 +188,24 @@ class DepositControllerTest {
     }
 
     @Test
+    void testDeposit_InvalidRequest_AmountLessThanOne_Returns400() throws Exception {
+        // Given
+        DepositRequest invalidRequest = new DepositRequest(
+                "1234567",
+                new BigDecimal("0.5"), // Amount less than 1
+                5L,
+                "Cash deposit"
+        );
+
+        // When & Then
+        mockMvc.perform(post("/deposit")
+                        .header("X-User-Role", "TELLER")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void testDeposit_AccountNotFound_Returns404() throws Exception {
         // Given
         Request request = Request.create(
