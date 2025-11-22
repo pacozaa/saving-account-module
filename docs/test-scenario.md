@@ -8,7 +8,7 @@ This document provides comprehensive test scenarios with curl commands to test a
 
 - [Prerequisites](#prerequisites)
 - [Test Scenario 1: Online Registration (Requirement 1)](#test-scenario-1-online-registration-requirement-1)
-  - [Test Case 1.1: Successful Registration as PERSON ✅](#test-case-11-successful-registration-as-person-)
+  - [Test Case 1.1: Successful Registration as CUSTOMER ✅](#test-case-11-successful-registration-as-person-)
   - [Test Case 1.2: Registration with Duplicate Username ✅](#test-case-12-registration-with-duplicate-username-)
   - [Test Case 1.3: Registration with Invalid Email ✅](#test-case-13-registration-with-invalid-email-)
   - [Test Case 1.4: Registration with Duplicate Citizen ID ✅](#test-case-14-registration-with-duplicate-citizen-id-)
@@ -34,7 +34,7 @@ This document provides comprehensive test scenarios with curl commands to test a
   - [Test Case 5.2: View All Accounts by User ID ✅](#test-case-52-view-all-accounts-by-user-id-)
   - [Test Case 5.3: Unauthorized Access to Another User's Account ✅](#test-case-53-unauthorized-access-to-another-users-account-)
   - [Test Case 5.4: TELLER Tries to View Account Information ✅](#test-case-54-teller-tries-to-view-account-information-)
-  - [Test Case 5.5: PERSON Tries to View Account Information ✅](#test-case-55-person-tries-to-view-account-information-)
+  - [Test Case 5.5: CUSTOMER Without Account Tries to View Account Information ✅](#test-case-55-person-tries-to-view-account-information-)
 - [Test Scenario 6: Money Transfer (Requirement 5)](#test-scenario-6-money-transfer-requirement-5)
   - [Test Case 6.1: Successful Money Transfer ✅](#test-case-61-successful-money-transfer-)
   - [Test Case 6.2: Transfer with Insufficient Funds ✅](#test-case-62-transfer-with-insufficient-funds-)
@@ -76,9 +76,9 @@ Ensure all services are running:
 
 ### Description
 
-A new PERSON registers online by providing email, password, and personal information.
+A new CUSTOMER registers online by providing email, password, and personal information.
 
-### Test Case 1.1: Successful Registration as PERSON ✅
+### Test Case 1.1: Successful Registration as CUSTOMER ✅
 
 **Explanation:** New person creates an account with valid credentials including Thai citizen ID, Thai name, English name, and 6-digit PIN.
 
@@ -93,7 +93,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "สมชาย ใจดี",
     "englishName": "Somchai Jaidee",
     "pin": "123456",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -108,7 +108,7 @@ curl -X POST http://localhost:8080/api/register \
     "citizenId": "1234567******",
     "thaiName": "สมชาย ใจดี",
     "englishName": "Somchai Jaidee",
-    "role": "PERSON",
+    "role": "CUSTOMER",
     "password": "$2a$10$Z9EYUUAaP/zI6zxVO3OU0.xpoqvnsv70ObfX56ySna8X2NwniWkta",
     "registeredAt": "2025-11-22T21:55:55.012532"
   },
@@ -132,7 +132,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "สมหญิง ดีใจ",
     "englishName": "Somying Deejai",
     "pin": "654321",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -162,7 +162,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "คนอื่น อื่น",
     "englishName": "Another Person",
     "pin": "888888",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -192,7 +192,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "ทดสอบ ระบบ",
     "englishName": "Test System",
     "pin": "777777",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -222,7 +222,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "ทดสอบ พิน",
     "englishName": "Test Pin",
     "pin": "123",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -305,7 +305,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   "type": "Bearer",
   "userId": 1,
   "username": "john_doe",
-  "role": "PERSON"
+  "role": "CUSTOMER"
 }
 ```
 
@@ -354,7 +354,7 @@ curl -X GET http://localhost:8080/api/auth/validate \
   "valid": true,
   "userId": 1,
   "username": "john_doe",
-  "role": "PERSON"
+  "role": "CUSTOMER"
 }
 ```
 
@@ -748,22 +748,22 @@ curl -X GET http://localhost:8080/api/accounts/1234567 \
 }
 ```
 
-### Test Case 5.5: PERSON Tries to View Account Information ✅
+### Test Case 5.5: CUSTOMER Without Account Tries to View Account Information ✅
 
-**Explanation:** PERSON role should not be able to view account information (only CUSTOMER can).
+**Explanation:** Users without CUSTOMER accounts should not be able to view account information (only CUSTOMER can).
 
 ```bash
-# Login as person
+# Login as customer
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "john_person",
-    "password": "personPass123"
+    "username": "john_customer",
+    "password": "customerPass123"
   }'
 
-# Try to access account (save person token as $PERSON_TOKEN)
+# Try to access account (save person token as $CUSTOMER_TOKEN)
 curl -X GET http://localhost:8080/api/accounts/1234567 \
-  -H "Authorization: Bearer $PERSON_TOKEN"
+  -H "Authorization: Bearer $CUSTOMER_TOKEN"
 ```
 
 **Expected Response:** HTTP 403 Forbidden
@@ -1068,9 +1068,9 @@ curl -X GET "http://localhost:8080/api/transactions/account/2230070" \
 
 A comprehensive test that covers the entire user journey from registration to money transfer.
 
-### Step 1: Register Two Users (Person A and Person B)
+### Step 1: Register Two Users (Customer A and Customer B)
 
-**Person A Registration:**
+**Customer A Registration:**
 
 ```bash
 curl -X POST http://localhost:8080/api/register \
@@ -1083,11 +1083,11 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "อลิซ คัสโตเมอร์",
     "englishName": "Alice Customer",
     "pin": "111111",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
-**Person B Registration:**
+**Customer B Registration:**
 
 ```bash
 curl -X POST http://localhost:8080/api/register \
@@ -1100,7 +1100,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "บ็อบ คัสโตเมอร์",
     "englishName": "Bob Customer",
     "pin": "222222",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -1320,7 +1320,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 ## Notes
 
 1. **Account ID Format:** The system generates 7-digit numeric account numbers (e.g., "1234567")
-2. **Roles:** The system has three roles: PERSON, CUSTOMER, and TELLER
+2. **Roles:** The system has two roles: CUSTOMER and TELLER
 3. **Authentication:** Most operations require a valid JWT token in the Authorization header
 4. **Transaction Ordering:** Bank statements show transactions from past to present (chronologically)
 5. **Minimum Deposit:** Deposits must be at least 1 THB
@@ -1347,7 +1347,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 - **CUSTOMER** role: Can view their own account information (`GET /accounts/{id}`, `GET /accounts/user/{userId}`) and transfer money
 - **TELLER** role: Can create accounts and make deposits (cannot view account information)
-- **PERSON** role: Basic registration role (cannot view accounts, transfer, or deposit)
+- **CUSTOMER** role: Registration and account access (cannot view accounts, transfer, or deposit)
 - Each endpoint enforces role requirements - attempting to access with wrong role returns HTTP 403 Forbidden
 
 ## Tips for Testing

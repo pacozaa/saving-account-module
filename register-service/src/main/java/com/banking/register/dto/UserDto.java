@@ -34,7 +34,7 @@ public class UserDto {
     @Schema(description = "Full name in English", example = "Somchai Jaidee")
     private String englishName;
     
-    @Schema(description = "User role", example = "PERSON")
+    @Schema(description = "User role", example = "CUSTOMER")
     private UserRole role;
     
     @Schema(description = "BCrypt hashed password")

@@ -93,10 +93,10 @@ class DepositControllerTest {
     }
 
     @Test
-    void testDeposit_WithPersonRole_Returns403() throws Exception {
+    void testDeposit_WithNonTellerRole_Returns403() throws Exception {
         // When & Then
         mockMvc.perform(post("/deposit")
-                        .header("X-User-Role", "PERSON")
+                        .header("X-User-Role", "CUSTOMER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isForbidden())

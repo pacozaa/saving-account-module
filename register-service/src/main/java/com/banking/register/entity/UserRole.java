@@ -1,7 +1,6 @@
 package com.banking.register.entity;
 
 public enum UserRole {
-    PERSON,     // For registration - normal person
-    CUSTOMER,   // For transfers
+    CUSTOMER,   // For registration, transfers, and account access
     TELLER      // For deposits and new account creation
 }

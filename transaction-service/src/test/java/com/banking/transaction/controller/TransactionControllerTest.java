@@ -136,7 +136,7 @@ class TransactionControllerTest {
         // Given
         Long transactionId = 1001L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         when(transactionService.getTransactionById(eq(transactionId), eq(userId), eq(role))).thenReturn(transactionDto);
 
         // When & Then
@@ -159,7 +159,7 @@ class TransactionControllerTest {
         // Given
         Long transactionId = 9999L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         when(transactionService.getTransactionById(eq(transactionId), eq(userId), eq(role)))
                 .thenThrow(new TransactionNotFoundException("Transaction not found with ID: " + transactionId));
 
@@ -179,7 +179,7 @@ class TransactionControllerTest {
         // Given
         Long accountId = 101L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         
         TransactionDto tx1 = new TransactionDto();
         tx1.setId(1001L);
@@ -223,7 +223,7 @@ class TransactionControllerTest {
         // Given
         Long accountId = 999L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         String pin = "123456";
         when(transactionService.getTransactionsByAccountId(eq(accountId), eq(pin), eq(userId), eq(role))).thenReturn(Arrays.asList());
 

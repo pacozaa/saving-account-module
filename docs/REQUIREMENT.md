@@ -2,11 +2,11 @@
 
 ### 1. Online Registration
 
-a. Only new PERSON can register by input both email and password. Then they need to fill-in personal information including citizen id, Thai name, and English name and PIN 6 digits number.
+a. Only new CUSTOMER can register by input both email and password. Then they need to fill-in personal information including citizen id, Thai name, and English name and PIN 6 digits number.
 
 ### 2. Creating a New Account
 
-a. Both CUSTOMER and PERSON can go to the bank asking TELLER to create a new account. Teller can create a new account using his/her citizen id, Thai name, and English name with or without a deposit.
+a. Both CUSTOMER can go to the bank asking TELLER to create a new account. Teller can create a new account using his/her citizen id, Thai name, and English name with or without a deposit.
 
 b. System generates unique "account number" with 7 numeric characters – for example "7777777" that will be use as a reference for deposit/money transfer.
 

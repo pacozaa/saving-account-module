@@ -49,7 +49,7 @@ class RegisterControllerTest {
                 .username("john_doe")
                 .password("password123")
                 .email("john.doe@example.com")
-                .role(UserRole.PERSON)
+                .role(UserRole.CUSTOMER)
                 .build();
         
         userDto = UserDto.builder()
@@ -57,7 +57,7 @@ class RegisterControllerTest {
                 .username("john_doe")
                 .password("$2a$10$hashedPassword")
                 .email("john.doe@example.com")
-                .role(UserRole.PERSON)
+                .role(UserRole.CUSTOMER)
                 .registeredAt(LocalDateTime.now())
                 .build();
         
@@ -82,7 +82,7 @@ class RegisterControllerTest {
                 .andExpect(jsonPath("$.user").exists())
                 .andExpect(jsonPath("$.user.username").value("john_doe"))
                 .andExpect(jsonPath("$.user.email").value("john.doe@example.com"))
-                .andExpect(jsonPath("$.user.role").value("PERSON"))
+                .andExpect(jsonPath("$.user.role").value("CUSTOMER"))
                 .andExpect(jsonPath("$.defaultAccountId").value(100))
                 .andExpect(jsonPath("$.message").exists());
     }
@@ -113,7 +113,7 @@ class RegisterControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("john_doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"))
-                .andExpect(jsonPath("$.role").value("PERSON"));
+                .andExpect(jsonPath("$.role").value("CUSTOMER"));
     }
     
     @Test
@@ -128,7 +128,7 @@ class RegisterControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("john_doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"))
-                .andExpect(jsonPath("$.role").value("PERSON"));
+                .andExpect(jsonPath("$.role").value("CUSTOMER"));
     }
     
     @Test

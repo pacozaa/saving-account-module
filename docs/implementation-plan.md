@@ -214,7 +214,7 @@ Based on the microservices architecture with:
 **Status:** ✅ COMPLETED
 
 **Completed Implementation:**
-- User entity with UserRole enum (PERSON, CUSTOMER, TELLER)
+- User entity with UserRole enum (CUSTOMER, TELLER)
 - UserRepository with custom query methods (findByUsername, findByEmail, existsByUsername, existsByEmail)
 - RegisterService with BCrypt password hashing and account creation via Feign
 - DTOs: RegisterRequest (with validation), UserDto, RegisterResponse
@@ -601,7 +601,7 @@ Based on the microservices architecture with:
   - Error scenarios (invalid accounts, insufficient funds)
 
 ### Manual Testing Checklist
-- [ ] Can register new user as PERSON
+- [ ] Can register new user as CUSTOMER
 - [ ] Registration creates default account
 - [ ] Can login and receive JWT
 - [ ] Can deposit with valid JWT

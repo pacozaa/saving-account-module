@@ -141,18 +141,13 @@ class JwtUtilTest {
 
     @Test
     void testGenerateToken_DifferentRoles_Success() {
-        // Test PERSON role
-        String personToken = jwtUtil.generateToken("person_user", 1L, "PERSON");
-        assertThat(jwtUtil.extractRole(personToken)).isEqualTo("PERSON");
-        assertThat(jwtUtil.validateToken(personToken)).isTrue();
-
         // Test CUSTOMER role
-        String customerToken = jwtUtil.generateToken("customer_user", 2L, "CUSTOMER");
+        String customerToken = jwtUtil.generateToken("customer_user", 1L, "CUSTOMER");
         assertThat(jwtUtil.extractRole(customerToken)).isEqualTo("CUSTOMER");
         assertThat(jwtUtil.validateToken(customerToken)).isTrue();
 
         // Test TELLER role
-        String tellerToken = jwtUtil.generateToken("teller_user", 3L, "TELLER");
+        String tellerToken = jwtUtil.generateToken("teller_user", 2L, "TELLER");
         assertThat(jwtUtil.extractRole(tellerToken)).isEqualTo("TELLER");
         assertThat(jwtUtil.validateToken(tellerToken)).isTrue();
     }

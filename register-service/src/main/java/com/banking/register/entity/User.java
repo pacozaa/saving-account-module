@@ -43,7 +43,7 @@ public class User {
     
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private UserRole role; // PERSON, CUSTOMER, TELLER
+    private UserRole role; // CUSTOMER, TELLER
     
     @Column(name = "registered_at", nullable = false, updatable = false)
     private LocalDateTime registeredAt;

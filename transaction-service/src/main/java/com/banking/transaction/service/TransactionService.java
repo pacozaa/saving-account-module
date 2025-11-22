@@ -50,9 +50,9 @@ public class TransactionService {
     public List<TransactionDto> getTransactionsByAccountId(Long accountId, String pin, Long authenticatedUserId, String userRole) {
         log.info("Fetching transactions for account: {} by user: {} with role: {}", accountId, authenticatedUserId, userRole);
         
-        // Only PERSON (customers) need ownership validation and PIN verification
+        // Only CUSTOMER needs ownership validation and PIN verification
         // TELLERs can view any transaction without PIN
-        if ("PERSON".equals(userRole)) {
+        if ("CUSTOMER".equals(userRole)) {
             validateAccountOwnership(accountId, authenticatedUserId);
             
             // Validate PIN for the authenticated user
@@ -76,8 +76,8 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new TransactionNotFoundException("Transaction not found with ID: " + transactionId));
         
-        // Only PERSON (customers) need ownership validation
-        if ("PERSON".equals(userRole)) {
+        // Only CUSTOMER needs ownership validation
+        if ("CUSTOMER".equals(userRole)) {
             validateAccountOwnership(transaction.getAccountId(), authenticatedUserId);
         }
         

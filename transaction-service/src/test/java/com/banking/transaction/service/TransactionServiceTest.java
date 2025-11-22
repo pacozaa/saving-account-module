@@ -128,7 +128,7 @@ class TransactionServiceTest {
         // Given
         Long accountId = 101L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         String pin = "123456";
         
         // Mock account service to return account owned by user
@@ -194,7 +194,7 @@ class TransactionServiceTest {
         // Given
         Long accountId = 999L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         String pin = "123456";
         
         // Mock account service to return account owned by user
@@ -226,7 +226,7 @@ class TransactionServiceTest {
         // Given
         Long transactionId = 1001L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         
         // Mock account service to return account owned by user
         com.banking.transaction.dto.AccountDto accountDto = new com.banking.transaction.dto.AccountDto();
@@ -251,12 +251,12 @@ class TransactionServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw TransactionNotFoundException when transaction not found")
+    @DisplayName("Should throw exception when transaction not found")
     void testGetTransactionById_NotFound_ThrowsException() {
         // Given
         Long transactionId = 9999L;
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -272,7 +272,7 @@ class TransactionServiceTest {
     void testMapToDto_Mapping() {
         // Given
         Long userId = 1L;
-        String role = "PERSON";
+        String role = "CUSTOMER";
         Transaction txWithRelated = Transaction.builder()
                 .id(1005L)
                 .accountId(101L)

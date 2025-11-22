@@ -211,16 +211,16 @@ class AuthServiceTest {
 
     @Test
     void testLogin_DifferentRoles_Success() {
-        // Test PERSON role
-        UserDto personUser = new UserDto(1L, "person_user", 
-                passwordEncoder.encode("password123"), "person@example.com", "PERSON");
-        LoginRequest personRequest = new LoginRequest("person_user", "password123");
+        // Test CUSTOMER role
+        UserDto customerUser = new UserDto(1L, "customer_user", 
+                passwordEncoder.encode("password123"), "customer@example.com", "CUSTOMER");
+        LoginRequest customerRequest = new LoginRequest("customer_user", "password123");
         
-        when(userClient.getUserByUsername("person_user")).thenReturn(personUser);
-        when(jwtUtil.generateToken("person_user", 1L, "PERSON")).thenReturn("token_person");
+        when(userClient.getUserByUsername("customer_user")).thenReturn(customerUser);
+        when(jwtUtil.generateToken("customer_user", 1L, "CUSTOMER")).thenReturn("token_customer");
 
-        LoginResponse personResponse = authService.login(personRequest);
-        assertThat(personResponse.getRole()).isEqualTo("PERSON");
+        LoginResponse customerResponse = authService.login(customerRequest);
+        assertThat(customerResponse.getRole()).isEqualTo("CUSTOMER");
 
         // Test TELLER role
         UserDto tellerUser = new UserDto(2L, "teller_user", 

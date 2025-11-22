@@ -54,6 +54,6 @@ public class RegisterRequest {
     private String pin;
     
     @NotNull(message = "Role is required")
-    @Schema(description = "User role", example = "PERSON", allowableValues = {"PERSON", "CUSTOMER", "TELLER"})
+    @Schema(description = "User role", example = "CUSTOMER", allowableValues = {"CUSTOMER", "TELLER"})
     private UserRole role;
 }

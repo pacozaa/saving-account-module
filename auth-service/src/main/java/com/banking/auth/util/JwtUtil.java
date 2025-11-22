@@ -28,7 +28,7 @@ public class JwtUtil {
      * 
      * @param username Username of the user
      * @param userId User ID
-     * @param role User role (PERSON, CUSTOMER, TELLER)
+     * @param role User role (CUSTOMER, TELLER)
      * @return JWT token string
      */
     public String generateToken(String username, Long userId, String role) {

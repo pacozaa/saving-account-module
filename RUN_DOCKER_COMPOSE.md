@@ -109,7 +109,7 @@ You should see all service APIs listed.
 
 ## Testing the System
 
-### Test 1: Register a New User (Person)
+### Test 1: Register a New User (Customer)
 
 ```bash
 curl -X POST http://localhost:8080/api/register \
@@ -122,7 +122,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "จอห์น โด",
     "englishName": "John Doe",
     "pin": "123456",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 ```
 
@@ -144,7 +144,7 @@ Expected response: `200 OK` with JWT token
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "username": "john_doe",
-  "role": "PERSON"
+  "role": "CUSTOMER"
 }
 ```
 
@@ -332,7 +332,7 @@ docker-compose build --no-cache auth-service
 Here's a complete example to test the full workflow:
 
 ```bash
-# 1. Register a person user
+# 1. Register a customer user
 curl -X POST http://localhost:8080/api/register \
   -H "Content-Type: application/json" \
   -d '{
@@ -343,7 +343,7 @@ curl -X POST http://localhost:8080/api/register \
     "thaiName": "อลิซ วันเดอร์แลนด์",
     "englishName": "Alice Wonderland",
     "pin": "111111",
-    "role": "PERSON"
+    "role": "CUSTOMER"
   }'
 
 # 2. Login and save the token

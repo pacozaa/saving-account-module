@@ -50,7 +50,7 @@ class RegisterServiceTest {
                 .thaiName("สมชาย ใจดี")
                 .englishName("Somchai Jaidee")
                 .pin("123456")
-                .role(UserRole.PERSON)
+                .role(UserRole.CUSTOMER)
                 .build();
         
         savedUser = User.builder()
@@ -62,7 +62,7 @@ class RegisterServiceTest {
                 .thaiName("สมชาย ใจดี")
                 .englishName("Somchai Jaidee")
                 .pin("$2a$10$hashedPin")
-                .role(UserRole.PERSON)
+                .role(UserRole.CUSTOMER)
                 .registeredAt(LocalDateTime.now())
                 .build();
     }
@@ -191,7 +191,7 @@ class RegisterServiceTest {
         assertThat(response.getUser().getCitizenId()).isEqualTo("1234567******"); // Masked
         assertThat(response.getUser().getThaiName()).isEqualTo("สมชาย ใจดี");
         assertThat(response.getUser().getEnglishName()).isEqualTo("Somchai Jaidee");
-        assertThat(response.getUser().getRole()).isEqualTo(UserRole.PERSON);
+        assertThat(response.getUser().getRole()).isEqualTo(UserRole.CUSTOMER);
         assertThat(response.getUser().getRegisteredAt()).isNotNull();
     }
     
