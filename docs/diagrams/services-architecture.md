@@ -268,7 +268,7 @@ sequenceDiagram
    - Follows microservices principle of data autonomy
    - Each service owns its data and schema
    - Services communicate via Feign clients, never direct DB access
-2. **Synchronous Communication**: Using Feign for simplicity in 48-hour constraint
+2. **Synchronous Communication**: Using Feign for simplicity in short time constraint
 3. **Stateless Services**: JWT tokens for authentication, no session management
 4. **API Gateway Pattern**: Single entry point with routing and security
 5. **Service Registry**: Centralized service discovery with Eureka

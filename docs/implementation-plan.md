@@ -1,4 +1,4 @@
-# Banking System - 48-Hour Implementation Plan
+# Banking System - Implementation Plan
 
 ## Architecture Overview
 
@@ -299,7 +299,7 @@ Based on the microservices architecture with:
 - Service configured to run on port 8086
 - Swagger/OpenAPI documentation annotations
 
-**Note:** Rollback strategy not implemented (acceptable tradeoff for 48-hour constraint). Uses synchronous calls with basic error handling.
+**Note:** Rollback strategy not implemented (acceptable tradeoff for short period constraint). Uses synchronous calls with basic error handling.
 
 #### Hour 26-30: Refine Orchestrators
 - [ ] Add request/response DTOs
@@ -577,7 +577,7 @@ Based on the microservices architecture with:
 - 🌟 Clean API responses
 - 🌟 Transaction history queries
 
-### Acceptable Tradeoffs (48-hour constraints)
+### Acceptable Tradeoffs (Short time constraints)
 - ⚠️ **No distributed transactions**: Use synchronous calls with basic error handling instead of Saga pattern
 - ⚠️ **No circuit breakers**: Skip Resilience4j for simplicity
 - ⚠️ **In-memory database**: H2 instead of PostgreSQL (can switch later)

@@ -191,7 +191,7 @@ jwt:
 3. **Header Injection** - Provides user context to services
 4. **Error Handling** - Returns proper 401 responses
 
-### ⚠️ Limitations (48-hour constraint tradeoffs)
+### ⚠️ Limitations (short period constraint tradeoffs)
 
 1. **No Refresh Tokens** - Tokens expire after 24 hours, requiring re-login
 2. **No Token Revocation** - Once issued, tokens remain valid until expiration

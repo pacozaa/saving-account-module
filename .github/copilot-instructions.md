@@ -1,5 +1,5 @@
 - This is Spring Boot microservices project.
-- This repository is a Saving Account Module. To build this within **48 hours**, you must prioritize **velocity and simplicity** over enterprise-grade perfection. You need to cut corners on complexity (like distributed tracing or complex Sagas) while maintaining a clean, working architecture.
+- This repository is a Saving Account Module. To build this within short period of time, you must prioritize **velocity and simplicity** over enterprise-grade perfection. You need to cut corners on complexity (like distributed tracing or complex Sagas) while maintaining a clean, working architecture.
 - When need to create new service, Use Spring Boot CLI to create a new project with the necessary dependencies for a RESTful web service. For example:
 ```
 spring init --dependencies=web,data-jpa,actuator my-microservice

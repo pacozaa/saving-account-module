@@ -394,7 +394,7 @@ Each service exposes:
 
 ### Design Decisions
 
-- **Synchronous REST Communication**: Easier to implement and debug within 48-hour constraint
+- **Synchronous REST Communication**: Easier to implement and debug within time constraint
 - **H2 In-Memory Database**: Fast development without external database setup
 - **No Distributed Transactions**: Simple sequential calls instead of Saga pattern
 - **JWT without Refresh Tokens**: Simplified authentication flow

@@ -1,7 +1,7 @@
 # Unit Test Implementation Plan
 
 ## Overview
-Minimal unit testing strategy for the Banking System microservices, focusing on critical business logic and fast execution within the 48-hour constraint.
+Minimal unit testing strategy for the Banking System microservices, focusing on critical business logic and fast execution within the short time constraint.
 
 ---
 
